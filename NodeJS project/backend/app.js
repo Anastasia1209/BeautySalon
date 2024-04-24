@@ -72,6 +72,6 @@ app.get("/", (req, res) => {
   res.send("Добро пожаловать в салон красоты");
 });
 
-app.listen(3000, () =>
-  console.log(`Server running at http://localhost:${3000}\n`)
+app.listen(5000, () =>
+  console.log(`Server running at http://localhost:${5000}\n`)
 );

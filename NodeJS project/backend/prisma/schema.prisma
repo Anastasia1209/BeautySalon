@@ -15,15 +15,86 @@ datasource db {
 
 
 model Users {
-  id        Int      @id @default(autoincrement())
+  userID        Int      @id @default(autoincrement())
   name      String
   phone     String?
   email     String   @unique
   password  String
   role       Roles        @default(USER)
+  
+  reviews  Reviews[]
+  registrations Registration[]
 }
 
 enum Roles {
   ADMIN
   USER
 }
+
+model Servics {
+  serviceID   Int     @id @default(autoincrement())
+  name        String  @unique
+  description String?
+  price       Decimal @default(0.00)
+  
+  employees   EmployeesServices[]
+}
+
+model Employees {
+  employeeID Int    @id @default(autoincrement())
+  name       String
+  surname    String
+  positions  String
+  email      String @unique
+  
+  services   EmployeesServices[]
+  reviews    Reviews[]
+  registrations Registration[]
+  schedules  Schedule[]
+}
+
+model EmployeesServices {
+  employeeID Int
+  serviceID  Int
+  
+  employee Employees @relation(fields: [employeeID], references: [employeeID], onDelete: Cascade)
+  service  Servics   @relation(fields: [serviceID], references: [serviceID], onDelete: Cascade)
+  
+  @@id([employeeID, serviceID])
+}
+
+model Registration {
+  registrationID Int     @id @default(autoincrement())
+  userID         Int
+  employeeID     Int
+  dateTime       DateTime
+  notes          String?
+  
+  user        Users    @relation(fields: [userID], references: [userID], onDelete: Cascade)
+  employee    Employees @relation(fields: [employeeID], references: [employeeID], onDelete: Cascade)
+}
+
+model Reviews {
+  reviewID    Int     @id @default(autoincrement())
+  userID      Int
+  employeeID  Int
+  rating      Int
+  comm        String?
+  
+  user        Users    @relation(fields: [userID], references: [userID], onDelete: Cascade)
+  employee    Employees @relation(fields: [employeeID], references: [employeeID], onDelete: Cascade)
+}
+
+model Schedule {
+  scheduleID Int     @id @default(autoincrement())
+  employeeID Int
+  date DateTime
+  startTime DateTime
+  endTime DateTime
+  
+  employee Employees @relation(fields: [employeeID], references: [employeeID], onDelete: Cascade)
+}
+
+
+
+

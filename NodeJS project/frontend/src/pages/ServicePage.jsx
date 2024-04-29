@@ -3,6 +3,7 @@ import axios from "axios";
 import { Container, Grid, Paper, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import ServicesList from "../components/ServiceList";
+import NavMenu from "../components/NavMenu";
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -15,23 +16,24 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function ServicesPage() {
-  //  const [services, setServices] = useState([]);
+  const [services, setServices] = useState([]);
   const classes = useStyles();
 
   // Загрузка данных об услугах с сервера с использованием Axios
-  //   useEffect(() => {
-  //     axios
-  //       .get("/api/services") // Здесь предполагается, что сервер предоставляет маршрут /api/services
-  //       .then((response) => {
-  //         setServices(response.data);
-  //       })
-  //       .catch((error) => {
-  //         console.error("Ошибка загрузки данных об услугах:", error);
-  //       });
-  //   }, []);
+  useEffect(() => {
+    axios
+      .get("/api/services") // Здесь предполагается, что сервер предоставляет маршрут /api/services
+      .then((response) => {
+        setServices(response.data);
+      })
+      .catch((error) => {
+        console.error("Ошибка загрузки данных об услугах:", error);
+      });
+  }, []);
 
   return (
     <Container>
+      <NavMenu />
       <Typography variant="h4" className={classes.title}>
         Цены и услуги
       </Typography>

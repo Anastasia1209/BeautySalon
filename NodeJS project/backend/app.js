@@ -1,16 +1,28 @@
 require("dotenv").config({ path: ".env" });
 const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
+
+const cors = require("cors");
+
 const express = require("express");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const session = require("express-session");
 const authRoute = require("./Routes/authRoute");
+const servRoute = require("./Routes/serviceRoute");
+const revRoute = require("./Routes/reviewRoute");
+const emplRoute = require("./Routes/employeeRoute");
 
 const app = express();
+
+app.use(cors());
 
 app.use(cookieParser());
 app.use(express.json());
 app.use("/auth", authRoute);
+app.use("/serv", servRoute);
+app.use("/rev", revRoute);
+app.use("/empl", emplRoute);
 
 app.use(
   session({

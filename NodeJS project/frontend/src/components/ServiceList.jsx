@@ -14,29 +14,29 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function ServicesList() {
-  //  const [services, setServices] = useState([]);
+  const [services, setServices] = useState([]);
   const classes = useStyles();
 
   // Загрузка данных об услугах с сервера с использованием Axios
-  //   useEffect(() => {
-  //     axios
-  //       .get("/api/services") // Здесь предполагается, что сервер предоставляет маршрут /api/services
-  //       .then((response) => {
-  //         setServices(response.data);
-  //       })
-  //       .catch((error) => {
-  //         console.error("Ошибка загрузки данных об услугах:", error);
-  //       });
-  //   }, []);
+  useEffect(() => {
+    axios
+      .get("/serv/getservices")
+      .then((response) => {
+        setServices(response.data);
+      })
+      .catch((error) => {
+        console.error("Ошибка загрузки данных об услугах:", error);
+      });
+  }, []);
 
-  const services = [
-    {
-      id: 1,
-      name: "Маникюр",
-      description: "Красивые и ухоженные ногти рукти все что хочешь.",
-      price: 80,
-    },
-  ];
+  // const services = [
+  //   {
+  //     id: 1,
+  //     name: "Маникюр",
+  //     description: "Красивые и ухоженные ногти рукти все что хочешь.",
+  //     price: 80,
+  //   },
+  // ];
 
   return (
     <Container>

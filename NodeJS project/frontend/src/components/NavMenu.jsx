@@ -131,8 +131,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const sections = [
-  { title: "Цены и услуги", url: "#" },
-  { title: "Контакты", url: "#" },
+  { title: "Цены и услуги", url: "/services" },
+  { title: "Отзывы", url: "#" },
 ];
 
 export default function SignIn() {
@@ -144,9 +144,9 @@ export default function SignIn() {
         <Container fixed>
           <Toolbar>
             <Typography variant="h6" className={classes.title}>
-              <Link to="/main" className={classes.title}>
+              {/* <Link to="/main" className={classes.title}>
                 Салон красоты
-              </Link>
+              </Link> */}
             </Typography>
 
             <Box>

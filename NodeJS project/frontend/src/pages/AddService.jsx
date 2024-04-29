@@ -22,6 +22,12 @@ function AddServiceForm() {
 
   const handleSubmit = () => {
     // Обработка отправки данных на сервер
+    // Валидируйте данные формы
+    if (!name || price <= 0) {
+      console.error("Пожалуйста, введите корректные данные.");
+      return;
+    }
+
     const serviceData = {
       name,
       description,
@@ -29,7 +35,7 @@ function AddServiceForm() {
     };
 
     axios
-      .post("/api/services", serviceData)
+      .post("/serv/addservice", serviceData)
       .then((response) => {
         console.log("Услуга успешно добавлена:", response.data);
         // Вы можете добавить логику после успешного добавления услуги, например, сброс формы или отображение сообщения об успехе

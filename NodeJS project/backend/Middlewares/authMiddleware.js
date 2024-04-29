@@ -1,8 +1,13 @@
 const jwt = require("jsonwebtoken");
-const { secret } = require("../config");
+const secret = process.env.ACCESS_TOKEN_SECRET;
+
 module.exports = function (req, res, next) {
   if (req.method === "OPTIONS") {
     next();
+  }
+  // Проверка наличия заголовка Authorization
+  if (!req.headers.authorization) {
+    return res.status(403).json({ message: "Authorization header is missing" });
   }
 
   try {

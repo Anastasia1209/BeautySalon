@@ -11,25 +11,9 @@ import { Container } from "@material-ui/core";
 import BookingForm from "./pages/BookForm";
 import AddMasterForm from "./pages/AddEmployee";
 import AddServiceForm from "./pages/AddService";
-
-// const useStyles = makeStyles((theme) => ({
-//   root: {
-//     flexGrow: 1,
-//   },
-//   title: {
-//     flexGrow: 1,
-//     justifyContent: "space-between",
-//     textAlign: "left",
-//     textDecoration: "none",
-//     color: "#ffffff",
-//   },
-//   button: {
-//     color: "#ffffff",
-//   },
-// }));
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 function App() {
-  //  const classes = useStyles();
   const post = {
     title: "Добро пожаловать в салон красоты!",
     description: "Насладитесь лучшим сервисом в нашем городе",
@@ -42,13 +26,6 @@ function App() {
       <Container>
         <NavMenu />
         <MainPost post={post} />
-        <RegistrationForm />
-        <LoginForm />
-        <ServicesPage />
-        <BookingForm />
-        <AddMasterForm />
-
-        <AddServiceForm></AddServiceForm>
       </Container>
     </div>
   );

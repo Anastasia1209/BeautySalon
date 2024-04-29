@@ -69,7 +69,7 @@ export default function MainPost(props) {
             <Typography variant="h6" color="inherit" paragraph>
               {post.description}
             </Typography>
-            <Link to="/registration">
+            <Link to="/login">
               <Button
                 variant="contained"
                 color="secondary"

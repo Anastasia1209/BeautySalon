@@ -2,6 +2,12 @@ const express = require("express");
 const { PrismaClient } = require("@prisma/client");
 const clientPr = new PrismaClient();
 const dayjs = require("dayjs");
+// Функция для преобразования времени в формат ISO-8601
+function convertToISO(date, time) {
+  const dateTimeString = `${date}T${time}:00Z`;
+  const dateTime = dayjs(dateTimeString);
+  return dateTime.toISOString();
+}
 
 class employeeController {
   //получение списка сотрудников
@@ -33,6 +39,7 @@ class employeeController {
           .json({ message: "Employee with this email already exists" });
       }
 
+      // Создание нового сотрудника и добавление его услуг
       const newEmployee = await clientPr.employees.create({
         data: {
           name,
@@ -45,23 +52,27 @@ class employeeController {
           },
         },
       });
+
       // Добавление расписания для нового сотрудника
       const timeSlots = [];
 
       for (const schedule of schedules) {
         const { date, startTime, endTime } = schedule;
 
-        // Конвертация `day`, `startTime` и `endTime` в объекты `dayjs`
-        const startDateTime = dayjs(`${date}T${startTime}`);
-        const endDateTime = dayjs(`${date}T${endTime}`);
+        // Преобразование `date`, `startTime`, и `endTime` в формат ISO-8601
+        const dateISO = convertToISO(date, "00:00");
+        const startTimeISO = convertToISO(date, startTime);
+        const endTimeISO = convertToISO(date, endTime);
 
         // Разделение времени на часовые интервалы
-        let currentTime = startDateTime;
-        while (currentTime.isBefore(endDateTime)) {
+        let currentTime = dayjs(startTimeISO);
+        const endTimeDate = dayjs(endTimeISO);
+        console.log(currentTime);
+        while (currentTime.isBefore(endTimeDate)) {
           // Добавление интервала времени в список
           timeSlots.push({
             employeeID: newEmployee.employeeID,
-            date: currentTime.format("YYYY-MM-DD"),
+            date: dateISO,
             startTime: currentTime.toISOString(),
             endTime: currentTime.add(1, "hour").toISOString(),
           });
@@ -70,19 +81,16 @@ class employeeController {
           currentTime = currentTime.add(1, "hour");
         }
         console.log(currentTime);
-        // Если есть оставшееся время и оно больше или равно одному часу
-        if (currentTime.isBefore(endDateTime)) {
-          const remainingTime = endDateTime.diff(currentTime, "minute");
 
-          if (remainingTime >= 60) {
-            // Добавление последнего интервала времени в список
-            timeSlots.push({
-              employeeID: newEmployee.employeeID,
-              date: currentTime.format("YYYY-MM-DD"),
-              startTime: currentTime.toISOString(),
-              endTime: endDateTime.toISOString(),
-            });
-          }
+        // Проверка оставшегося времени и добавление последнего интервала, если необходимо
+        const remainingTime = endTimeDate.diff(currentTime, "minute");
+        if (remainingTime >= 60) {
+          timeSlots.push({
+            employeeID: newEmployee.employeeID,
+            date: dateISO,
+            startTime: currentTime.toISOString(),
+            endTime: endTimeDate.toISOString(),
+          });
         }
       }
 
@@ -106,33 +114,78 @@ class employeeController {
 
   async updateEmployee(req, res) {
     try {
-      // Получение идентификатора сотрудника из параметров запроса
+      // Извлечение идентификатора сотрудника из параметров запроса
       const employeeID = parseInt(req.params.id, 10);
 
-      // Извлечение данных для обновления из тела запроса
+      // Извлечение данных из тела запроса
       const { name, surname, positions, email, services, schedules } = req.body;
 
-      // Обновление данных сотрудника
+      // Проверка, указаны ли данные для обновления
+      if (
+        !name &&
+        !surname &&
+        !positions &&
+        !email &&
+        !services &&
+        !schedules
+      ) {
+        return res.status(400).json({ message: "No data provided for update" });
+      }
+
+      // Обновление информации о сотруднике
+      const updateData = {};
+      if (name) updateData.name = name;
+      if (surname) updateData.surname = surname;
+      if (positions) updateData.positions = positions;
+      if (email) updateData.email = email;
+
+      // Обновление сотрудника в базе данных
       const updatedEmployee = await clientPr.employees.update({
         where: { employeeID },
-        data: {
-          name: name || undefined,
-          surname: surname || undefined,
-          positions: positions || undefined,
-          email: email || undefined,
-        },
+        data: updateData,
       });
 
       // Обновление услуг сотрудника
       if (services) {
-        await clientPr.employees.update({
+        // Извлечение существующих связей с услугами сотрудника
+        const existingServices = await clientPr.employeesServices.findMany({
           where: { employeeID },
-          data: {
-            services: {
-              set: services.map((serviceID) => ({ serviceID })),
-            },
+          select: {
+            serviceID: true,
           },
         });
+
+        // Создание множества существующих и переданных услуг
+        const existingServiceIDs = new Set(
+          existingServices.map((service) => service.serviceID)
+        );
+        const newServiceIDs = new Set(services);
+
+        // Удаление услуг, которых больше нет в переданных данных
+        const servicesToRemove = Array.from(existingServiceIDs).filter(
+          (serviceID) => !newServiceIDs.has(serviceID)
+        );
+        if (servicesToRemove.length > 0) {
+          await clientPr.employeesServices.deleteMany({
+            where: {
+              employeeID,
+              serviceID: { in: servicesToRemove },
+            },
+          });
+        }
+
+        // Добавление новых услуг, которых нет в существующих
+        const servicesToAdd = Array.from(newServiceIDs).filter(
+          (serviceID) => !existingServiceIDs.has(serviceID)
+        );
+        if (servicesToAdd.length > 0) {
+          await clientPr.employeesServices.createMany({
+            data: servicesToAdd.map((serviceID) => ({
+              employeeID,
+              serviceID,
+            })),
+          });
+        }
       }
 
       // Обновление расписания сотрудника
@@ -142,40 +195,44 @@ class employeeController {
           where: { employeeID },
         });
 
-        // Добавление нового расписания
+        // Добавление расписания для нового сотрудника
         const timeSlots = [];
 
         for (const schedule of schedules) {
-          const { day, startTime, endTime } = schedule;
+          const { date, startTime, endTime } = schedule;
 
-          // Конвертация `day`, `startTime`, и `endTime` в объекты `dayjs`
-          const startDateTime = dayjs(`${day} ${startTime}`);
-          const endDateTime = dayjs(`${day} ${endTime}`);
+          // Преобразование `date`, `startTime`, и `endTime` в формат ISO-8601
+          const dateISO = convertToISO(date, "00:00");
+          const startTimeISO = convertToISO(date, startTime);
+          const endTimeISO = convertToISO(date, endTime);
 
           // Разделение времени на часовые интервалы
-          let currentTime = startDateTime;
-          while (currentTime.isBefore(endDateTime)) {
+          let currentTime = dayjs(startTimeISO);
+          const endTimeDate = dayjs(endTimeISO);
+          console.log(currentTime);
+          while (currentTime.isBefore(endTimeDate)) {
             // Добавление интервала времени в список
             timeSlots.push({
               employeeID,
-              dateTime: currentTime.toISOString(),
+              date: dateISO,
+              startTime: currentTime.toISOString(),
+              endTime: currentTime.add(1, "hour").toISOString(),
             });
+
             // Переход к следующему часовому интервалу
             currentTime = currentTime.add(1, "hour");
           }
+          console.log(currentTime);
 
-          // Проверка последнего интервала
-          if (currentTime.isBefore(endDateTime)) {
-            // Рассчитайте оставшийся интервал времени
-            const remainingTime = endDateTime.diff(currentTime, "minute");
-
-            // Если оставшийся интервал равен или больше одного часа, добавьте его
-            if (remainingTime >= 60) {
-              timeSlots.push({
-                employeeID,
-                dateTime: currentTime.toISOString(),
-              });
-            }
+          // Проверка оставшегося времени и добавление последнего интервала, если необходимо
+          const remainingTime = endTimeDate.diff(currentTime, "minute");
+          if (remainingTime >= 60) {
+            timeSlots.push({
+              employeeID,
+              date: dateISO,
+              startTime: currentTime.toISOString(),
+              endTime: endTimeDate.toISOString(),
+            });
           }
         }
 
@@ -187,7 +244,7 @@ class employeeController {
         }
       }
 
-      // Возврат данных об обновленном сотруднике
+      // Возврат данных об успешно обновленном сотруднике
       res.status(200).json({
         message: "Employee updated successfully",
         employee: updatedEmployee,

@@ -16,4 +16,16 @@ router.post(
   authMiddleware,
   employeeController.addEmployee
 );
+router.put(
+  "/updempl/:id",
+  checkRole("ADMIN"),
+  authMiddleware,
+  employeeController.updateEmployee
+);
+router.delete(
+  "/delempl/:id",
+  checkRole("ADMIN"),
+  authMiddleware,
+  employeeController.delEmployee
+);
 module.exports = router;

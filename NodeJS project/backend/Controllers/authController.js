@@ -24,6 +24,8 @@ class authController {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        console.log("Ошибка при регистрации");
+
         return res
           .status(400)
           .json({ message: "Ошибка при регистрации", errors });
@@ -31,6 +33,8 @@ class authController {
       const { name, phone, email, password, role } = req.body;
 
       if (!name || !phone || !email || !password) {
+        console.log("All fields are required");
+
         return res.status(400).json({ message: "All fields are required" });
       }
 
@@ -38,6 +42,7 @@ class authController {
         where: { email },
       });
       if (existingUser) {
+        console.log("Email already exists");
         return res.status(409).json({ message: "Email already exists" });
       }
 
@@ -68,6 +73,7 @@ class authController {
           role: newUser.role,
         },
       });
+      console.log("User registered successfully");
     } catch (error) {
       console.error(error);
       res.status(400).json({ message: "Registration error" });

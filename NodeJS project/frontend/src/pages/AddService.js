@@ -24,7 +24,7 @@ function AddServiceForm() {
     // Обработка отправки данных на сервер
     // Валидируйте данные формы
     if (!name || price <= 0) {
-      console.error("Пожалуйста, введите корректные данные.");
+      console.error("Bведите корректные данные.");
       return;
     }
 
@@ -34,19 +34,23 @@ function AddServiceForm() {
       price,
     };
 
-    axios
-      .post("/serv/addservice", serviceData)
-      .then((response) => {
-        console.log("Услуга успешно добавлена:", response.data);
-        // Вы можете добавить логику после успешного добавления услуги, например, сброс формы или отображение сообщения об успехе
-        setName("");
-        setDescription("");
-        setPrice("");
-      })
-      .catch((error) => {
-        console.error("Ошибка при добавлении услуги:", error);
-        // Вы можете добавить логику обработки ошибок, например, отображение сообщения об ошибке
+    try {
+      // Отправляем POST-запрос на сервер
+      const response = axios.post("/serv/addservice", serviceData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
+
+      console.log("Услуга успешно добавлена:", response.data);
+
+      // Сброс формы после успешного добавления
+      setName("");
+      setDescription("");
+      setPrice("");
+    } catch (error) {
+      console.error("Ошибка при добавлении услуги:", error);
+    }
   };
 
   return (

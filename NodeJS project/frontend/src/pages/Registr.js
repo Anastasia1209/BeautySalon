@@ -8,6 +8,9 @@ import Box from "@material-ui/core/Box";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
+import axios from "axios";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -29,8 +32,37 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function SignUp() {
+function SignUp() {
   const classes = useStyles();
+  const navigate = useNavigate();
+
+  // Состояния формы для хранения значений из полей ввода
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  // Обработчик отправки формы
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Предотвратить перезагрузку страницы
+
+    // Создание объекта с данными пользователя
+    const userData = {
+      name: name,
+      phone: phone,
+      email: email,
+      password: password,
+    };
+
+    try {
+      // Отправка POST-запроса на сервер
+      const response = await axios.post("/auth/registration", userData);
+      console.log("User registered successfully:", response.data);
+      navigate("/login");
+    } catch (error) {
+      console.error("Error registering user:", error);
+    }
+  };
 
   return (
     <Container component="main" maxWidth="xs">
@@ -39,29 +71,20 @@ export default function SignUp() {
         <Typography component="h1" variant="h5">
           Регистрация
         </Typography>
-        <form className={classes.form} noValidate>
+        <form className={classes.form} noValidate onSubmit={handleSubmit}>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12}>
               <TextField
-                autoComplete="fname"
-                name="firstName"
                 variant="outlined"
                 required
                 fullWidth
-                id="firstName"
+                id="name"
                 label="Имя"
+                name="name"
+                autoComplete="given-name"
                 autoFocus
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                id="lastName"
-                label="Фамилия"
-                name="lastName"
-                autoComplete="lname"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
               />
             </Grid>
 
@@ -74,6 +97,8 @@ export default function SignUp() {
                 label="Номер телефона"
                 name="phone"
                 autoComplete="phone"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
               />
             </Grid>
             <Grid item xs={12}>
@@ -85,6 +110,8 @@ export default function SignUp() {
                 label="Email"
                 name="email"
                 autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </Grid>
             <Grid item xs={12}>
@@ -97,6 +124,8 @@ export default function SignUp() {
                 type="password"
                 id="password"
                 autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </Grid>
             <Grid item xs={12}></Grid>
@@ -123,3 +152,4 @@ export default function SignUp() {
     </Container>
   );
 }
+export default SignUp;

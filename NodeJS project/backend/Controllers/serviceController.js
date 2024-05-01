@@ -10,6 +10,7 @@ class serviceController {
 
     // Проверяем корректность данных
     if (!name || price === undefined) {
+      console.log("Название услуги и цена обязательны");
       return res
         .status(400)
         .json({ error: "Название услуги и цена обязательны" });
@@ -21,6 +22,7 @@ class serviceController {
       });
 
       if (existingService) {
+        console.log("Service name already exists");
         return res.status(409).json({ message: "Service name already exists" });
       }
 
@@ -37,6 +39,7 @@ class serviceController {
 
       // Возвращаем добавленную услугу как подтверждение
       res.status(201).json({ message: "Service add successfully", newService });
+      console.log("Service add successfully");
     } catch (error) {
       console.error("Ошибка при добавлении услуги:", error);
       res.status(500).json({ error: "Ошибка при добавлении услуги" });
@@ -47,7 +50,7 @@ class serviceController {
   async getServices(req, res) {
     try {
       const services = await clientPr.servics.findMany();
-      res.status(200).json({ services });
+      res.status(200).json(services);
     } catch (error) {
       console.error("Ошибка при получении услуг:", error);
       res.status(500).json({ error: "Ошибка при получении услуг" });

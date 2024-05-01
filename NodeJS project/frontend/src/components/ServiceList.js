@@ -12,31 +12,9 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: theme.spacing(4),
   },
 }));
-
-function ServicesList() {
-  const [services, setServices] = useState([]);
+///////////////////////////////////////////////////
+function ServicesList({ services }) {
   const classes = useStyles();
-
-  // Загрузка данных об услугах с сервера с использованием Axios
-  useEffect(() => {
-    axios
-      .get("/serv/getservices")
-      .then((response) => {
-        setServices(response.data);
-      })
-      .catch((error) => {
-        console.error("Ошибка загрузки данных об услугах:", error);
-      });
-  }, []);
-
-  // const services = [
-  //   {
-  //     id: 1,
-  //     name: "Маникюр",
-  //     description: "Красивые и ухоженные ногти рукти все что хочешь.",
-  //     price: 80,
-  //   },
-  // ];
 
   return (
     <Container>
@@ -45,13 +23,15 @@ function ServicesList() {
           <Grid item xs={12} key={service.id}>
             <Paper className={classes.paper}>
               <Grid container justify="space-between" alignItems="center">
-                <Grid item xs={4}>
+                <Grid item xs={8}>
                   <Typography variant="h6" style={{ textAlign: "left" }}>
                     {service.name}
                   </Typography>
-                  <Typography variant="body2">{service.description}</Typography>
+                  <Typography variant="body2" style={{ textAlign: "left" }}>
+                    {service.description}
+                  </Typography>
                 </Grid>
-                <Grid item xs={6} style={{ textAlign: "right" }}>
+                <Grid item xs={4} style={{ textAlign: "right" }}>
                   <Typography variant="body1">
                     Цена: {service.price} руб.
                   </Typography>

@@ -6,10 +6,6 @@ import ServicesList from "../components/ServiceList";
 import NavMenu from "../components/NavMenu";
 
 const useStyles = makeStyles((theme) => ({
-  paper: {
-    padding: theme.spacing(3),
-    marginBottom: theme.spacing(2),
-  },
   title: {
     marginBottom: theme.spacing(4),
   },
@@ -19,10 +15,9 @@ function ServicesPage() {
   const [services, setServices] = useState([]);
   const classes = useStyles();
 
-  // Загрузка данных об услугах с сервера с использованием Axios
   useEffect(() => {
     axios
-      .get("/api/services") // Здесь предполагается, что сервер предоставляет маршрут /api/services
+      .get("/serv/getservices")
       .then((response) => {
         setServices(response.data);
       })
@@ -37,7 +32,7 @@ function ServicesPage() {
       <Typography variant="h4" className={classes.title}>
         Цены и услуги
       </Typography>
-      <ServicesList></ServicesList>
+      <ServicesList services={services} />
     </Container>
   );
 }

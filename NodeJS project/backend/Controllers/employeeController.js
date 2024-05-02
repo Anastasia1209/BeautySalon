@@ -2,6 +2,11 @@ const express = require("express");
 const { PrismaClient } = require("@prisma/client");
 const clientPr = new PrismaClient();
 const dayjs = require("dayjs");
+require("dayjs/plugin/utc");
+require("dayjs/plugin/timezone");
+dayjs.extend(require("dayjs/plugin/utc"));
+dayjs.extend(require("dayjs/plugin/timezone"));
+
 // Функция для преобразования времени в формат ISO-8601
 function convertToISO(date, time) {
   const dateTimeString = `${date}T${time}:00Z`;
@@ -59,15 +64,41 @@ class employeeController {
       for (const schedule of schedules) {
         const { date, startTime, endTime } = schedule;
 
+        console.log("Date:", date);
+        console.log("Start time:", startTime);
+        console.log("End time:", endTime);
+
         // Преобразование `date`, `startTime`, и `endTime` в формат ISO-8601
-        const dateISO = convertToISO(date, "00:00");
-        const startTimeISO = convertToISO(date, startTime);
-        const endTimeISO = convertToISO(date, endTime);
+        // const dateISO = convertToISO(date, "00:00");
+        // const startTimeISO = convertToISO(date, startTime);
+        // const endTimeISO = convertToISO(date, endTime);
+        const dateISO = dayjs(date).startOf("day").toISOString();
+        // Устанавливаем дату `date` для `startTime` и `endTime`, прибавляя 3 часа
+        const adjustedStartTime = dayjs(startTime).add(3, "hour");
+        const adjustedEndTime = dayjs(endTime).add(3, "hour");
+
+        // Объединяем `date` с `adjustedStartTime` и `adjustedEndTime`
+        const startTimeISO = dayjs(date)
+          .hour(adjustedStartTime.hour())
+          .minute(adjustedStartTime.minute())
+          .second(0)
+          .toISOString();
+        const endTimeISO = dayjs(date)
+          .hour(adjustedEndTime.hour())
+          .minute(adjustedEndTime.minute())
+          .second(0)
+          .toISOString();
+
+        console.log(dateISO);
+        console.log(startTimeISO);
+        console.log(endTimeISO);
 
         // Разделение времени на часовые интервалы
         let currentTime = dayjs(startTimeISO);
         const endTimeDate = dayjs(endTimeISO);
+
         console.log(currentTime);
+
         while (currentTime.isBefore(endTimeDate)) {
           // Добавление интервала времени в список
           timeSlots.push({

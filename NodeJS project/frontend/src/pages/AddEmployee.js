@@ -10,10 +10,9 @@ import {
   Select,
   MenuItem,
   Grid,
-  Paper,
 } from "@mui/material";
-import { DatePicker, TimePicker, LocalizationProvider } from "@mui/lab";
-import AdapterDayjs from "@mui/lab/AdapterDayjs";
+
+import DateTimePicker from "../components/DateTimePicker";
 
 function AddEmployeeForm() {
   const [name, setName] = useState("");
@@ -23,11 +22,10 @@ function AddEmployeeForm() {
   const [services, setServices] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
   const [schedules, setSchedules] = useState([]);
-
   // Получение списка услуг
   useEffect(() => {
     axios
-      .get("/services")
+      .get("/serv/getservices")
       .then((response) => {
         setServices(response.data);
       })
@@ -49,8 +47,18 @@ function AddEmployeeForm() {
   };
 
   // Обработка отправки формы
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Проверки перед отправкой данных
+    if (!name || !surname || !positions || !email) {
+      console.error("Пожалуйста, заполните все поля.");
+      return;
+    }
+    if (!selectedServices.length) {
+      console.error("Пожалуйста, выберите хотя бы одну услугу.");
+      return;
+    }
 
     const employeeData = {
       name,
@@ -62,7 +70,11 @@ function AddEmployeeForm() {
     };
 
     try {
-      const response = await axios.post("/employees", employeeData);
+      const response = await axios.post("/empl/addempl", employeeData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
       console.log("Employee added successfully:", response.data);
       // Сброс формы после успешного добавления
       setName("");
@@ -72,7 +84,14 @@ function AddEmployeeForm() {
       setSelectedServices([]);
       setSchedules([]);
     } catch (error) {
-      console.error("Error adding employee:", error);
+      // console.error("Error adding employee:", error);
+      if (error.response && error.response.status === 409) {
+        console.error(
+          "Error adding employee: Сотрудник с таким email уже существует."
+        );
+      } else {
+        console.error("Error adding employee:", error);
+      }
     }
   };
 
@@ -82,6 +101,7 @@ function AddEmployeeForm() {
         Добавить сотрудника
       </Typography>
       <form onSubmit={handleSubmit}>
+        {/* Поля для имени, фамилии, должности и email */}
         <TextField
           fullWidth
           label="Имя"
@@ -134,34 +154,8 @@ function AddEmployeeForm() {
         </Typography>
         {schedules.map((schedule, index) => (
           <Grid container spacing={2} key={index} style={{ marginBottom: 8 }}>
-            <Grid item xs={4}>
-              <TextField
-                fullWidth
-                label="День недели"
-                value={schedule.day}
-                onChange={(e) => updateSchedule(index, "day", e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={4}>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <TimePicker
-                  label="Начало работы"
-                  value={schedule.startTime}
-                  onChange={(time) => updateSchedule(index, "startTime", time)}
-                  renderInput={(params) => <TextField {...params} />}
-                />
-              </LocalizationProvider>
-            </Grid>
-            <Grid item xs={4}>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <TimePicker
-                  label="Окончание работы"
-                  value={schedule.endTime}
-                  onChange={(time) => updateSchedule(index, "endTime", time)}
-                  renderInput={(params) => <TextField {...params} />}
-                />
-              </LocalizationProvider>
-            </Grid>
+            {/* Используем DateTimePicker для выбора дня и времени */}
+            <DateTimePicker index={index} onUpdateSchedule={updateSchedule} />
           </Grid>
         ))}
         <Button
@@ -183,95 +177,128 @@ function AddEmployeeForm() {
 
 export default AddEmployeeForm;
 
-//////////////////////////////////
-// import React, { useState } from "react";
-// import { Button, Container, TextField, Typography } from "@material-ui/core";
-// import { makeStyles } from "@material-ui/core/styles";
+///////предыдущая версия//////////
+//import React, { useState, useEffect } from "react";
 // import axios from "axios";
-// import { LocalizationProvider, DateTimePicker } from "@mui/x-date-pickers";
-// import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+// import {
+//   Container,
+//   Typography,
+//   TextField,
+//   Button,
+//   FormControl,
+//   InputLabel,
+//   Select,
+//   MenuItem,
+//   Grid,
+// } from "@mui/material";
+// import { TimePicker, LocalizationProvider } from "@mui/lab";
+// //import AdapterDayjs from "@mui/lab/AdapterDayjs";
+// import { LocalizationProvider } from "@mui/x-date-pickers-pro";
+// import { AdapterDayjs } from "@mui/x-date-pickers-pro/AdapterDayjs";
+// import { DateRangeCalendar } from "@mui/x-date-pickers-pro";
 
-// const useStyles = makeStyles((theme) => ({
-//   formControl: {
-//     marginBottom: theme.spacing(2),
-//   },
-//   button: {
-//     marginTop: theme.spacing(3),
-//   },
-// }));
-
-// function AddMasterForm() {
-//   const classes = useStyles();
-
-//   // Состояния для данных формы
+// function AddEmployeeForm() {
 //   const [name, setName] = useState("");
 //   const [surname, setSurname] = useState("");
-//   const [position, setPosition] = useState("");
-//   const [phone, setPhone] = useState("");
+//   const [positions, setPositions] = useState("");
 //   const [email, setEmail] = useState("");
-//   const [dateTime, setDateTime] = useState(null); // Добавлено состояние для даты и времени
+//   const [services, setServices] = useState([]);
+//   const [selectedServices, setSelectedServices] = useState([]);
+//   //const [schedules, setSchedules] = useState([]);
+//   const [dateRange, setDateRange] = useState([null, null]);
 
-//   const handleSubmit = () => {
-//     // Обработка отправки данных на сервер
-//     const masterData = {
-//       name,
-//       surname,
-//       position,
-//       phone,
-//       email,
-//       dateTime, // Добавьте дату и время в данные, отправляемые на сервер
-//     };
-
+//   // Получение списка услуг
+//   useEffect(() => {
 //     axios
-//       .post("/api/masters", masterData)
+//       .get("/serv/getservices")
 //       .then((response) => {
-//         console.log("Мастер успешно добавлен:", response.data);
-//         // Сброс формы после успешного добавления
-//         setName("");
-//         setSurname("");
-//         setPosition("");
-//         setPhone("");
-//         setEmail("");
-//         setDateTime(null);
+//         setServices(response.data);
 //       })
 //       .catch((error) => {
-//         console.error("Ошибка при добавлении мастера:", error);
+//         console.error("Error getting services:", error);
 //       });
+//   }, []);
+
+//   // Добавление расписания
+//   const addSchedule = () => {
+//     setSchedules([...schedules, { day: "", startTime: null, endTime: null }]);
+//   };
+
+//   // Обновление расписания
+//   const updateSchedule = (index, field, value) => {
+//     const updatedSchedules = [...schedules];
+//     updatedSchedules[index][field] = value;
+//     setSchedules(updatedSchedules);
+//   };
+
+//   // Обработка отправки формы
+//   const handleSubmit = async (event) => {
+//     event.preventDefault();
+
+//     // Проверки перед отправкой данных
+//     if (!name || !surname || !positions || !email) {
+//       console.error("Пожалуйста, заполните все поля.");
+//       return;
+//     }
+//     if (!selectedServices.length) {
+//       console.error("Пожалуйста, выберите хотя бы одну услугу.");
+//       return;
+//     }
+
+//     const employeeData = {
+//       name,
+//       surname,
+//       positions,
+//       email,
+//       services: selectedServices,
+//       schedules,
+//     };
+
+//     try {
+//       const response = await axios.post("/empl/addempl", employeeData, {
+//         headers: {
+//           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+//         },
+//       });
+//       console.log("Employee added successfully:", response.data);
+//       // Сброс формы после успешного добавления
+//       setName("");
+//       setSurname("");
+//       setPositions("");
+//       setEmail("");
+//       setSelectedServices([]);
+//       setSchedules([]);
+//     } catch (error) {
+//       console.error("Error adding employee:", error);
+//     }
 //   };
 
 //   return (
 //     <Container>
 //       <Typography variant="h4" gutterBottom>
-//         Добавить мастера
+//         Добавить сотрудника
 //       </Typography>
-//       <form>
+//       <form onSubmit={handleSubmit}>
 //         <TextField
 //           fullWidth
 //           label="Имя"
 //           value={name}
 //           onChange={(e) => setName(e.target.value)}
-//           className={classes.formControl}
+//           margin="normal"
 //         />
 //         <TextField
 //           fullWidth
 //           label="Фамилия"
 //           value={surname}
 //           onChange={(e) => setSurname(e.target.value)}
-//           className={classes.formControl}
+//           margin="normal"
 //         />
 //         <TextField
 //           fullWidth
 //           label="Должность"
-//           value={position}
-//           onChange={(e) => setPosition(e.target.value)}
-//           className={classes.formControl}
-//         />
-//         <TextField
-//           fullWidth
-//           label="Телефон"
-//           value={phone}
-//           onChange={(e) => setPhone(e.target.value)}
-//           className={classes.formControl}
+//           value={positions}
+//           onChange={(e) => setPositions(e.target.value)}
+//           margin="normal"
 //         />
 //         <TextField
 //           fullWidth
@@ -279,31 +306,76 @@ export default AddEmployeeForm;
 //           type="email"
 //           value={email}
 //           onChange={(e) => setEmail(e.target.value)}
-//           className={classes.formControl}
+//           margin="normal"
 //         />
 
-//         {/* Добавляем DateTimePicker в форму */}
-//         <LocalizationProvider dateAdapter={AdapterDayjs}>
-//           <DateTimePicker
-//             label="Дата и время"
-//             value={dateTime}
-//             onChange={(newValue) => setDateTime(newValue)}
-//             renderInput={(params) => <TextField {...params} />}
-//             className={classes.formControl}
-//           />
-//         </LocalizationProvider>
+//         {/* Список услуг */}
+//         <FormControl fullWidth margin="normal">
+//           <InputLabel>Выберите услуги</InputLabel>
+//           <Select
+//             multiple
+//             value={selectedServices}
+//             onChange={(e) => setSelectedServices(e.target.value)}
+//           >
+//             {services.map((service) => (
+//               <MenuItem key={service.serviceID} value={service.serviceID}>
+//                 {service.name}
+//               </MenuItem>
+//             ))}
+//           </Select>
+//         </FormControl>
 
+//         {/* Расписание */}
+//         <Typography variant="h6" gutterBottom>
+//           Расписание работы
+//         </Typography>
+//         {schedules.map((schedule, index) => (
+//           <Grid container spacing={2} key={index} style={{ marginBottom: 8 }}>
+//             <Grid item xs={4}>
+//               <TextField
+//                 fullWidth
+//                 label="День недели"
+//                 value={schedule.day}
+//                 onChange={(e) => updateSchedule(index, "day", e.target.value)}
+//               />
+//             </Grid>
+//             <Grid item xs={4}>
+//               <LocalizationProvider dateAdapter={AdapterDayjs}>
+//                 <TimePicker
+//                   label="Начало работы"
+//                   value={schedule.startTime}
+//                   onChange={(time) => updateSchedule(index, "startTime", time)}
+//                   renderInput={(params) => <TextField {...params} />}
+//                 />
+//               </LocalizationProvider>
+//             </Grid>
+//             <Grid item xs={4}>
+//               <LocalizationProvider dateAdapter={AdapterDayjs}>
+//                 <TimePicker
+//                   label="Окончание работы"
+//                   value={schedule.endTime}
+//                   onChange={(time) => updateSchedule(index, "endTime", time)}
+//                   renderInput={(params) => <TextField {...params} />}
+//                 />
+//               </LocalizationProvider>
+//             </Grid>
+//           </Grid>
+//         ))}
 //         <Button
 //           variant="contained"
-//           color="primary"
-//           onClick={handleSubmit}
-//           className={classes.button}
+//           color="secondary"
+//           onClick={addSchedule}
+//           style={{ marginBottom: 16 }}
 //         >
-//           Добавить мастера
+//           Добавить расписание
+//         </Button>
+
+//         <Button type="submit" variant="contained" color="primary">
+//           Добавить сотрудника
 //         </Button>
 //       </form>
 //     </Container>
 //   );
 // }
 
-// export default AddMasterForm;
+// export default AddEmployeeForm;

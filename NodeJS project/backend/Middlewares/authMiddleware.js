@@ -16,6 +16,13 @@ module.exports = function (req, res, next) {
       return res.status(403).json({ message: "Пользователь не авторизован" });
     }
     const decodedData = jwt.verify(token, secret);
+    console.log("Decoded token data:", decodedData);
+    console.log(decodedData.userID);
+    if (!decodedData.userID) {
+      console.log("User ID is missing from decoded token data.");
+      return res.status(403).json({ message: "Пользователь не авторизован" });
+    }
+
     req.user = decodedData;
     next();
   } catch (error) {

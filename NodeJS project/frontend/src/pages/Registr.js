@@ -41,6 +41,7 @@ function SignUp() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   // Обработчик отправки формы
   const handleSubmit = async (e) => {
@@ -60,6 +61,11 @@ function SignUp() {
       console.log("User registered successfully:", response.data);
       navigate("/login");
     } catch (error) {
+      if (error.response && error.response.data) {
+        setError(error.response.data.message); // Сохраняем сообщение об ошибке
+      } else {
+        setError("Неизвестная ошибка при регистрации.");
+      }
       console.error("Error registering user:", error);
     }
   };
@@ -130,6 +136,12 @@ function SignUp() {
             </Grid>
             <Grid item xs={12}></Grid>
           </Grid>
+          {/* Отображение ошибки */}
+          {error && (
+            <Typography color="error" variant="body2">
+              {error}
+            </Typography>
+          )}
           <Button
             type="submit"
             fullWidth

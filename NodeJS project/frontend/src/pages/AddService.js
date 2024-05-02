@@ -20,7 +20,8 @@ function AddServiceForm() {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
 
-  const handleSubmit = () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     // Обработка отправки данных на сервер
     // Валидируйте данные формы
     if (!name || price <= 0) {
@@ -38,7 +39,7 @@ function AddServiceForm() {
       // Отправляем POST-запрос на сервер
       const response = axios.post("/serv/addservice", serviceData, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
       });
 

@@ -12,8 +12,9 @@ const authController = require("../Controllers/authController.js");
 
 const router = express.Router();
 
-router.get("/user", AuthController.getUserById);
 router.get("/currentUser", authMiddleware, AuthController.currentUser);
+router.get("/getuser", authMiddleware, AuthController.getUserData);
+
 router.post(
   "/registration",
   [

@@ -10,12 +10,12 @@ function MainPage() {
     description: "Насладитесь лучшим сервисом в нашем городе",
     image: "https://source.unsplash.com/random",
     imageText: "salon",
-    linkText: "Learn More",
   };
   const sections = [
     { title: "Цены и услуги", url: "/services" },
     { title: "Отзывы", url: "#" },
     { title: "Админ", url: "/admin" },
+    { title: "User", url: "/user" },
   ];
   return (
     <div className="App">

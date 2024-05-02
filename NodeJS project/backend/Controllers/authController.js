@@ -5,14 +5,13 @@ const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
 const secret = process.env.ACCESS_TOKEN_SECRET;
 
-const generateAccessToken = (id, role) => {
-  console.log(id + " fffff " + role);
+const generateAccessToken = (userID, role) => {
+  console.log(userID + "     " + role);
   const payload = {
-    id,
+    userID,
     role,
   };
 
-  console.log("payload^ " + payload);
   return jwt.sign(payload, secret, {
     expiresIn: "1h",
   });
@@ -24,18 +23,20 @@ class authController {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        console.log("Ошибка при регистрации");
+        console.log("Неверно введены данные");
 
         return res
           .status(400)
-          .json({ message: "Ошибка при регистрации", errors });
+          .json({ message: "Неверно введены данные", errors });
       }
       const { name, phone, email, password, role } = req.body;
 
       if (!name || !phone || !email || !password) {
         console.log("All fields are required");
 
-        return res.status(400).json({ message: "All fields are required" });
+        return res
+          .status(400)
+          .json({ message: "Все поля должны быть заполнены" });
       }
 
       const existingUser = await clientPr.users.findUnique({
@@ -43,7 +44,7 @@ class authController {
       });
       if (existingUser) {
         console.log("Email already exists");
-        return res.status(409).json({ message: "Email already exists" });
+        return res.status(409).json({ message: "Email уже используется" });
       }
 
       // Захеширован пароль
@@ -66,7 +67,7 @@ class authController {
       res.status(201).json({
         message: "User registered successfully",
         user: {
-          id: newUser.id,
+          userID: newUser.userID,
           name: newUser.name,
           phone: newUser.phone,
           email: newUser.email,
@@ -89,12 +90,12 @@ class authController {
       });
 
       if (!user) {
-        return res.status(401).json({ message: "User is not found" });
+        return res.status(401).json({ message: "Пользователь не найден" });
       }
 
       const isPasswordValid = bcrypt.compareSync(password, user.password);
       if (!isPasswordValid) {
-        return res.status(401).json({ message: "Invalid password" });
+        return res.status(401).json({ message: "Неверный пароль" });
       }
 
       // const accessToken = jwt.sign({id: user.id}, process.env.ACCESS_TOKEN_SECRET);
@@ -103,6 +104,8 @@ class authController {
       //console.log(user.userID + " fffff " + user.role);
       //вопросики с ролями и так ли айди
       const token = generateAccessToken(user.userID, user.role);
+      console.log("/////////////////////////");
+      console.log(user.userID);
       return res.json({ token });
     } catch (error) {
       // next(error);
@@ -111,96 +114,43 @@ class authController {
     }
   }
 
-  async getUserById(req, res) {
+  async getUserData(req, res) {
     try {
-      // Извлечение ID из запроса
-      const id = parseInt(req.query.id);
-      if (!Number.isInteger(id)) {
-        return res.status(400).json({ message: "Invalid user ID" });
+      // Получение userID из middleware
+      const { userID } = req.user;
+
+      console.log(userID);
+      // Найти пользователя по userID
+      const user = await clientPr.users.findFirst({
+        where: {
+          userID: userID,
+        },
+      });
+
+      // Проверить, существует ли пользователь
+      if (!user) {
+        return res.status(404).json({ message: "Пользователь не найден" });
       }
 
-      // Извлечение токена из заголовка
-      const authorizationHeader = req.headers.authorization;
-      if (!authorizationHeader) {
-        return res.status(401).json({ message: "You are not authorized" });
-      }
-
-      const tokenArray = authorizationHeader.split(" ");
-      if (tokenArray.length === 2) {
-        const token = tokenArray[1];
-        let decodedToken;
-        try {
-          decodedToken = jwt.verify(token, secret);
-        } catch (err) {
-          return res.status(401).json({ message: "Invalid token" });
-        }
-
-        // Сравнение ID пользователя из токена с ID из запроса
-        const userIdFromToken = decodedToken.id;
-        if (userIdFromToken !== id) {
-          return res.status(403).json({ message: "Forbidden" });
-        }
-
-        // Получение данных о пользователе из базы данных
-        const user = await clientPr.users.findFirst({
-          where: {
-            userID,
-          },
-        });
-
-        if (!user) {
-          return res.status(404).json({ message: "User not found" });
-        }
-
-        // Возврат данных о пользователе
-        return res.json(user);
-      }
-    } catch (e) {
-      console.log(e);
-      res.status(400).json({ message: "User error" });
+      // Отправить данные пользователя в ответе
+      return res.json({
+        userID: user.userID,
+        name: user.name,
+        phone: user.phone,
+        email: user.email,
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Ошибка сервера" });
     }
   }
-  /*
-  async currentUser(req, res) {
-    try {
-      // проверка, что пользователь авторизован:
-      const authorizationHeader = req.headers.authorization;
-      if (!authorizationHeader) {
-        return res.status(401).json("You are not authorized");
-      }
-      if (authorizationHeader) {
-        const tokenArray = authorizationHeader.split(" ");
-        if (tokenArray.length === 2) {
-          const token = tokenArray[1];
-          let decodedToken;
-          try {
-            decodedToken = jwt.verify(token, secret);
-            console.log("adasdasdasdsa " + decodedToken);
-          } catch (err) {
-            return res.status(401).json({ message: "Invalid token" });
-          }
-          const id = decodedToken.id;
-          console.log("uuuuuuuuuuuuuuuu");
-          console.log(decodedToken);
 
-          const user = await clientPr.users.findFirst({
-            where: {
-              userID: id,
-            },
-          });
-          return res.json(user);
-        }
-      }
-    } catch (e) {
-      console.log(e);
-      res.status(400).json({ message: "Get user error" });
-    }
-  }
-*/
   async currentUser(req, res) {
     try {
       // Используйте данные о пользователе из `req.user`, установленного middleware
       const userId = req.user.userID; // Или `req.user.id`, если вы используете этот ключ в `decodedData`
+
+      console.log("User ID from token:", userId);
 
       // Извлечение пользователя из базы данных по его ID
       const user = await clientPr.users.findFirst({
@@ -237,7 +187,7 @@ class authController {
       return res.status(404).json({ message: "Пользователь не найден" });
     }
 
-    const { name, phone, email, password, role } = req.body;
+    const { name, phone, email, password } = req.body;
 
     const updateData = {};
 

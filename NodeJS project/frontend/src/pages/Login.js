@@ -19,7 +19,7 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
   },
   form: {
-    width: "100%", // Fix IE 11 issue.
+    width: "100%",
     marginTop: theme.spacing(1),
   },
   submit: {
@@ -33,11 +33,11 @@ function SignIn() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Создание объекта с данными для отправки на сервер
     const userData = {
       email,
       password,
@@ -50,12 +50,16 @@ function SignIn() {
 
       console.log("User logged in successfully:", token);
 
-      // Сохраняем токен в локальное хранилище (или в любое другое место)
+      // Сохраняем токен в локальное хранилище
       localStorage.setItem("authToken", token);
 
-      // Перенаправляем пользователя после успешного входа
-      navigate("/main"); // Замените "/" на нужный путь
+      navigate("/main");
     } catch (error) {
+      if (error.response && error.response.data) {
+        setError(error.response.data.message); // Сохраняем сообщение об ошибке
+      } else {
+        setError("Неизвестная ошибка при входе.");
+      }
       console.error("Error logging in user:", error);
     }
   };
@@ -67,6 +71,7 @@ function SignIn() {
         <Typography component="h1" variant="h5">
           Войти
         </Typography>
+
         <form className={classes.form} noValidate onSubmit={handleSubmit}>
           <TextField
             variant="outlined"
@@ -94,6 +99,12 @@ function SignIn() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+          {/* Отображение ошибки */}
+          {error && (
+            <Typography color="error" variant="body2">
+              {error}
+            </Typography>
+          )}
           <Button
             type="submit"
             fullWidth

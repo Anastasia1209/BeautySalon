@@ -220,6 +220,7 @@ class authController {
         data: updateData,
       });
 
+      console.log("Пользователь успешно обновлен");
       // Возврат обновленных данных о пользователе
       res.status(200).json({
         message: "Пользователь успешно обновлен",

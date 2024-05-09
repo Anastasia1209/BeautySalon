@@ -11,6 +11,7 @@ import Container from "@material-ui/core/Container";
 import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import NavMenu from "../components/NavMenu";
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -72,6 +73,7 @@ function SignUp() {
 
   return (
     <Container component="main" maxWidth="xs">
+      <NavMenu />
       <CssBaseline />
       <div className={classes.paper}>
         <Typography component="h1" variant="h5">

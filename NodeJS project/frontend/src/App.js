@@ -15,6 +15,13 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import MainPage from "./pages/MainPage";
 import AdminPage from "./pages/AdminPage";
 import UserPage from "./pages/UserPage";
+import EmployeePage from "./pages/EmployeePage";
+import EditService from "./pages/EditService";
+import EditEmployee from "./pages/EditEmployee";
+import ReviewPage from "./pages/ReviewPage";
+import BookingForm from "./pages/BookForm";
+import AddEmployee from "./pages/AddEmployee";
+import AddService from "./pages/AddService";
 function App() {
   /* const post = {
     title: "Добро пожаловать в салон красоты!",
@@ -30,11 +37,25 @@ function App() {
         <Routes>
           {/* Используйте element вместо component */}
           <Route path="/main" element={<MainPage />} />
+
           <Route path="/register" element={<RegistrationForm />} />
           <Route path="/login" element={<LoginForm />} />
+
           <Route path="/services" element={<ServicesPage />} />
+          <Route path="/serv/updserv/:id" element={<EditService />} />
+          <Route path="/serv/addserv" element={<AddService />} />
+
           <Route path="/admin" element={<AdminPage />} />
+
           <Route path="/user" element={<UserPage />} />
+
+          <Route path="/employees" element={<EmployeePage />} />
+          <Route path="/empl/updempl/:id" element={<EditEmployee />} />
+          <Route path="/empl/addempl" element={<AddEmployee />} />
+
+          <Route path="/rev/getrewempl/:id" element={<ReviewPage />} />
+
+          <Route path="/bookingform" element={<BookingForm />} />
         </Routes>
         {/*<MainPost post={post} />*/}
       </Container>

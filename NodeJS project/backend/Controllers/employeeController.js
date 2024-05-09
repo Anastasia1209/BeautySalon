@@ -18,13 +18,92 @@ class employeeController {
   //получение списка сотрудников
   async getEmployees(req, res) {
     try {
-      const employees = await clientPr.employees.findMany();
-      res.status(200).json(employees);
+      const employees = await clientPr.employees.findMany({
+        // Включаем связанные данные об услугах для каждого сотрудника
+        include: {
+          services: {
+            include: {
+              service: true, // Включаем данные об услугах
+            },
+          },
+        },
+      });
+      const employeeWithId = employees.map((employee) => ({
+        id: employee.employeeID,
+        name: employee.name,
+        surname: employee.surname,
+        phone: employee.phone,
+        email: employee.email,
+        services: employee.services.map(
+          (empService) => empService.service.name
+        ),
+      }));
+
+      res.status(200).json(employeeWithId);
     } catch (error) {
       console.error("Error getting employees:", error);
       res.status(500).json({ message: "Error getting employees" });
     }
   }
+
+  async getEmployeesByService(req, res) {
+    try {
+      // const serviceID = parseInt(req.params.id, 10);
+
+      // const { serviceID } = req.body;
+      const { serviceID } = req.params;
+      const parsedServiceID = parseInt(serviceID, 10);
+
+      console.log(parsedServiceID);
+
+      if (!serviceID) {
+        return res.status(400).json({ message: "Service ID is required" });
+      }
+
+      // Поиск сотрудников, предоставляющих данную услугу
+      const employees = await clientPr.employees.findMany({
+        where: {
+          services: {
+            some: {
+              serviceID: parsedServiceID,
+            },
+          },
+        },
+        select: {
+          employeeID: true,
+          name: true,
+          surname: true,
+        },
+      });
+
+      // Проверка наличия сотрудников для данной услуги
+      if (employees.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "No employees found for the specified service" });
+      }
+
+      // Возвращаем список сотрудников (имя и фамилию) в ответ
+      res.status(200).json({
+        message: "Employees retrieved successfully",
+        employees: employees,
+      });
+    } catch (error) {
+      console.error("Error retrieving employees by service:", error);
+      res
+        .status(500)
+        .json({ message: "Error retrieving employees by service" });
+    }
+  }
+
+  //////////////////////////////////
+  //////////////////////////////////
+  // async addSchedule(newEmployee, schedules, clientPr) {
+  //   const timeSlots = [];
+
+  //   const { date, startTime, endTime } = schedules[0];
+
+  //////////////////////////////////
   //добавление сотрудника
   async addEmployee(req, res) {
     try {
@@ -60,76 +139,95 @@ class employeeController {
 
       // Добавление расписания для нового сотрудника
       const timeSlots = [];
+      ///////////////////////////////////////
 
-      for (const schedule of schedules) {
-        const { date, startTime, endTime } = schedule;
+      //for (const schedule of schedules) {
+      const { date, startTime, endTime } = schedules[0];
 
-        console.log("Date:", date);
-        console.log("Start time:", startTime);
-        console.log("End time:", endTime);
+      const dateUTC = new Date(date);
+      const startTimeUTC = new Date(startTime);
+      const endTimeUTC = new Date(endTime);
 
-        // Преобразование `date`, `startTime`, и `endTime` в формат ISO-8601
-        // const dateISO = convertToISO(date, "00:00");
-        // const startTimeISO = convertToISO(date, startTime);
-        // const endTimeISO = convertToISO(date, endTime);
-        const dateISO = dayjs(date).startOf("day").toISOString();
-        // Устанавливаем дату `date` для `startTime` и `endTime`, прибавляя 3 часа
-        const adjustedStartTime = dayjs(startTime).add(3, "hour");
-        const adjustedEndTime = dayjs(endTime).add(3, "hour");
+      const dateLocal = new Date(
+        dateUTC.setHours(dateUTC.getHours() - dateUTC.getTimezoneOffset() / 60)
+      );
 
-        // Объединяем `date` с `adjustedStartTime` и `adjustedEndTime`
-        const startTimeISO = dayjs(date)
-          .hour(adjustedStartTime.hour())
-          .minute(adjustedStartTime.minute())
-          .second(0)
-          .toISOString();
-        const endTimeISO = dayjs(date)
-          .hour(adjustedEndTime.hour())
-          .minute(adjustedEndTime.minute())
-          .second(0)
-          .toISOString();
+      const startLocal = new Date(
+        new Date(
+          startTimeUTC.setHours(
+            startTimeUTC.getHours() - startTimeUTC.getTimezoneOffset() / 60
+          )
+        ).setDate(dateLocal.getDate())
+      );
 
-        console.log(dateISO);
-        console.log(startTimeISO);
-        console.log(endTimeISO);
+      const endLocal = new Date(
+        endTimeUTC.setHours(
+          endTimeUTC.getHours() - endTimeUTC.getTimezoneOffset() / 60
+        )
+      );
 
-        // Разделение времени на часовые интервалы
-        let currentTime = dayjs(startTimeISO);
-        const endTimeDate = dayjs(endTimeISO);
+      console.log("------------------------------");
 
-        console.log(currentTime);
+      console.log("Date: ", dateLocal);
+      console.log("Start time: ", startLocal);
+      console.log("End time: ", endLocal);
+      console.log("------------------------------");
 
-        while (currentTime.isBefore(endTimeDate)) {
-          // Добавление интервала времени в список
-          timeSlots.push({
-            employeeID: newEmployee.employeeID,
-            date: dateISO,
-            startTime: currentTime.toISOString(),
-            endTime: currentTime.add(1, "hour").toISOString(),
-          });
+      //Разделение времени на часовые интервалы
+      // let currentTime = dayjs(startTimeISO);
+      // const endTimeDate = dayjs(endTimeISO);
 
-          // Переход к следующему часовому интервалу
-          currentTime = currentTime.add(1, "hour");
-        }
-        console.log(currentTime);
+      // console.log(currentTime);
 
-        // Проверка оставшегося времени и добавление последнего интервала, если необходимо
-        const remainingTime = endTimeDate.diff(currentTime, "minute");
-        if (remainingTime >= 60) {
-          timeSlots.push({
-            employeeID: newEmployee.employeeID,
-            date: dateISO,
-            startTime: currentTime.toISOString(),
-            endTime: endTimeDate.toISOString(),
-          });
-        }
+      // const dateISO = convertToISO(date, "00:00");
+      // const startTimeISO = convertToISO(date, startTime);
+      // const endTimeISO = convertToISO(date, endTime);
+
+      //let startLocalTemp = startLocal;
+      // while (currentTime.isBefore(endTimeDate)) {
+      //   // Добавление интервала времени в список
+      //   timeSlots.push({
+      //     employeeID: newEmployee.employeeID,
+      //     date: dateISO,
+      //     startTime: currentTime.toISOString(),
+      //     endTime: currentTime.add(1, "hour").toISOString(),
+      //   });
+
+      //   // Переход к следующему часовому интервалу
+      //   currentTime = currentTime.add(1, "hour");
+      // }
+      // console.log(currentTime);
+
+      // Проверка оставшегося времени и добавление последнего интервала, если необходимо
+      // const remainingTime = endTimeDate.diff(currentTime, "minute");
+      // if (remainingTime >= 60) {
+      //   timeSlots.push({
+      //     employeeID: newEmployee.employeeID,
+      //     date: dateISO,
+      //     startTime: currentTime.toISOString(),
+      //     endTime: endTimeDate.toISOString(),
+      //   });
+      // }
+      //}
+
+      while (startLocal.getHours() < endLocal.getHours()) {
+        timeSlots.push({
+          employeeID: newEmployee.employeeID,
+          date: dateLocal,
+          startTime: new Date(startLocal),
+          endTime: new Date(startLocal.setHours(startLocal.getHours() + 1)),
+        });
       }
 
+      new Date(startLocal.setDate(dateLocal.getDate()));
+      console.log(timeSlots);
       // Добавление расписания в базу данных
       if (timeSlots.length > 0) {
         await clientPr.schedule.createMany({
           data: timeSlots,
         });
+
+        //clientPr.schedule.upsert()
       }
 
       // Возврат данных о созданном сотруднике
@@ -143,6 +241,9 @@ class employeeController {
     }
   }
 
+  ////////////////////////////////////////
+  /////////////////////////////////////////
+  /////////////////////////////////////////
   async updateEmployee(req, res) {
     try {
       // Извлечение идентификатора сотрудника из параметров запроса

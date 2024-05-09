@@ -13,6 +13,11 @@ router.get(
   authMiddleware,
   reviewController.getReviewsByEmployee
 );
+router.get(
+  "/getrating/:id",
+  authMiddleware,
+  reviewController.getAverageRatingByEmployee
+);
 router.delete("/delreview", authMiddleware, reviewController.delReview);
 
 module.exports = router;

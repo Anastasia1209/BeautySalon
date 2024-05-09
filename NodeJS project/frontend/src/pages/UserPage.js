@@ -9,6 +9,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import NavMenu from "../components/NavMenu";
 
 function UserPage() {
   const [user, setUser] = useState(null);
@@ -16,33 +17,33 @@ function UserPage() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Функция для загрузки текущего пользователя
+  const fetchCurrentUser = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await axios.get("/auth/getuser", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Устанавливаем данные о пользователе
+      setUser(response.data);
+      setFormData({
+        name: response.data.name,
+        phone: response.data.phone,
+        email: response.data.email,
+      });
+    } catch (error) {
+      console.error("Error fetching current user:", error);
+      navigate("/login");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     // Получение данных о текущем пользователе из API
-    const fetchCurrentUser = async () => {
-      try {
-        const token = localStorage.getItem("authToken");
-
-        // Добавляем токен в заголовок Authorization запроса
-        const response = await axios.get("/auth/getuser", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        setUser(response.data);
-        // Инициализация formData значениями текущего пользователя
-        setFormData({
-          name: response.data.name,
-          phone: response.data.phone,
-          email: response.data.email,
-        });
-      } catch (error) {
-        console.error("Error fetching current user:", error);
-        navigate("/login");
-      } finally {
-        setLoading(false);
-      }
-    };
 
     fetchCurrentUser();
   }, [navigate]);
@@ -58,8 +59,14 @@ function UserPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!user || !user.userID) {
+      console.error("User ID is not defined.");
+      return;
+    }
+    console.log("user.userID:", user.userID);
+
     try {
-      const token = localStorage.getItem("authToken");
+      //  const token = localStorage.getItem("authToken");
 
       // Отправка данных для обновления пользователя
       const response = await axios.put(
@@ -67,17 +74,26 @@ function UserPage() {
         formData,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         }
       );
 
       console.log("User updated successfully:", response.data);
       // После успешного обновления можно перезагрузить данные о пользователе
-      setUser(response.data.user);
+      fetchCurrentUser();
     } catch (error) {
       console.error("Error updating user:", error);
     }
+  };
+
+  const handleLogout = () => {
+    // Удаляем токен из localStorage
+    localStorage.removeItem("authToken");
+    // Очищаем состояние пользователя
+    setUser(null);
+    // Перенаправляем пользователя на страницу входа
+    navigate("/main");
   };
 
   if (loading) {
@@ -99,6 +115,7 @@ function UserPage() {
 
   return (
     <Container>
+      <NavMenu />
       <Typography variant="h4" gutterBottom>
         Информация о пользователе
       </Typography>
@@ -139,6 +156,16 @@ function UserPage() {
           sx={{ mt: 2 }}
         >
           Сохранить
+        </Button>
+        {/* Добавляем кнопку "Выйти" */}
+        <Button
+          onClick={handleLogout}
+          fullWidth
+          variant="outlined"
+          color="secondary"
+          sx={{ mt: 2 }}
+        >
+          Выйти
         </Button>
       </form>
     </Container>

@@ -59,6 +59,9 @@ class reviewController {
         where: {
           employeeID: employeeID,
         },
+        include: {
+          user: true, // Включаем отношение с моделью `Users` для получения пользователя
+        },
       });
 
       res.status(200).json(reviews);
@@ -68,6 +71,40 @@ class reviewController {
     }
   }
 
+  async getAverageRatingByEmployee(req, res) {
+    try {
+      // Получение `employeeID` из параметра маршрута
+      const employeeID = parseInt(req.params.id, 10);
+
+      // Проверка на действительность `employeeID`
+      if (isNaN(employeeID)) {
+        return res.status(400).json({ message: "Invalid employee ID" });
+      }
+
+      // Вычисление среднего рейтинга для отзывов сотрудника
+      const averageRating = await clientPr.reviews.aggregate({
+        where: {
+          employeeID: employeeID, // Условие фильтрации по `employeeID`
+        },
+        _avg: {
+          rating: true, // Вычисляем среднее значение поля `rating`
+        },
+      });
+      const roundedAverageRating = averageRating._avg.rating
+        ? averageRating._avg.rating.toFixed(2)
+        : 0.0;
+
+      // Возврат среднего рейтинга клиенту
+      res.status(200).json({ averageRating: roundedAverageRating });
+    } catch (error) {
+      console.error("Error getting average rating for employee:", error);
+      res
+        .status(500)
+        .json({ message: "Error getting average rating for employee" });
+    }
+  }
+
+  //оно оказывается не нужно))))
   //удаление отзыва
   async delReview(req, res) {
     const reviewId = parseInt(req.params.id, 10);

@@ -1,6 +1,5 @@
 const express = require("express");
 //const Router = require('express');
-const AuthController = require("../Controllers/authController.js");
 //const AuthValidator = require("../Validators/auth.js");
 const { check } = require("express-validator");
 const jwt = require("jsonwebtoken");
@@ -8,12 +7,11 @@ const jwt = require("jsonwebtoken");
 const authMiddleware = require("../Middlewares/authMiddleware.js");
 const roleMiddleware = require("../Middlewares/roleMiddleware.js");
 const authController = require("../Controllers/authController.js");
-//const authController = require("../Controllers/authController.js");
 
 const router = express.Router();
 
-router.get("/currentUser", authMiddleware, AuthController.currentUser);
-router.get("/getuser", authMiddleware, AuthController.getUserData);
+//router.get("/currentUser", authMiddleware, AuthController.currentUser);
+router.get("/getuser", authMiddleware, authController.getUserData);
 
 router.post(
   "/registration",
@@ -27,16 +25,16 @@ router.post(
       .notEmpty()
       .isLength({ min: 7, max: 9 }),
   ],
-  AuthController.registration
+  authController.registration
 );
-router.put("/upduser/:id", authMiddleware, AuthController.updateUser);
+router.put("/upduser/:id", authMiddleware, authController.updateUser);
 router.delete("/deluser/:id", authMiddleware, authController.deleteUser);
 router.post(
   "/login",
   [check("email", "Введите правильный email").notEmpty().isEmail()],
-  AuthController.login
+  authController.login
 );
-router.post("/logout", AuthController.logOut);
+router.post("/logout", authController.logOut);
 //router.post("/refresh", AuthValidator.refresh, AuthController.refresh);
 
 module.exports = router;

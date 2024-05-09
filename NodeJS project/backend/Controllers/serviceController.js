@@ -39,7 +39,7 @@ class serviceController {
 
       // Возвращаем добавленную услугу как подтверждение
       res.status(201).json({ message: "Service add successfully", newService });
-      console.log("Service add successfully");
+      console.log("Service add successfully: ", newService);
     } catch (error) {
       console.error("Ошибка при добавлении услуги:", error);
       res.status(500).json({ error: "Ошибка при добавлении услуги" });
@@ -50,7 +50,14 @@ class serviceController {
   async getServices(req, res) {
     try {
       const services = await clientPr.servics.findMany();
-      res.status(200).json(services);
+
+      const servicesWithId = services.map((service) => ({
+        id: service.serviceID, // Преобразуем `serviceID` в `id` для ответа
+        name: service.name,
+        description: service.description,
+        price: service.price,
+      }));
+      res.status(200).json(servicesWithId);
     } catch (error) {
       console.error("Ошибка при получении услуг:", error);
       res.status(500).json({ error: "Ошибка при получении услуг" });
@@ -59,25 +66,31 @@ class serviceController {
 
   //получение услуги по id
   async getServById(req, res) {
-    const serviceId = parseInt(req.params.id, 10);
-    console.log(serviceId);
+    const serviceID = parseInt(req.params.id, 10);
+    console.log(serviceID);
 
-    if (isNaN(serviceId)) {
+    if (isNaN(serviceID)) {
       return res.status(400).json({ error: "Неверный идентификатор услуги" });
     }
     try {
       const service = await clientPr.servics.findFirst({
         where: {
-          serviceID: serviceId,
+          serviceID,
         },
       });
+      const serviceData = {
+        id: service.serviceID,
+        name: service.name,
+        description: service.description,
+        price: service.price,
+      };
 
       if (!service) {
         return res.status(404).json({ error: "Услуга не найдена" });
       }
 
       // Возвращаем услугу в ответе
-      res.status(200).json({ service });
+      res.status(200).json(serviceData);
     } catch (error) {
       console.error("Ошибка при получении услуги по id:", error);
       res.status(500).json({ error: "Ошибка при получении услуги по id" });
@@ -86,10 +99,10 @@ class serviceController {
 
   //обновление услуги
   async updServ(req, res) {
-    const serviceId = parseInt(req.params.id, 10);
+    const serviceID = parseInt(req.params.id, 10);
 
     // Проверяем корректность идентификатора
-    if (isNaN(serviceId)) {
+    if (isNaN(serviceID)) {
       return res.status(400).json({ error: "Неверный идентификатор услуги" });
     }
 
@@ -116,7 +129,7 @@ class serviceController {
     try {
       const updatedService = await clientPr.servics.update({
         where: {
-          serviceID: serviceId,
+          serviceID,
         },
         data: updateData,
       });

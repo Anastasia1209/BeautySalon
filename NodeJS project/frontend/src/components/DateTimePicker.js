@@ -33,7 +33,7 @@ function DateTimePicker({ index, onUpdateSchedule }) {
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Grid container spacing={2}>
         {/* Выбор даты */}
-        <Grid item xs={12}>
+        <Grid item xs={4}>
           <DatePicker
             label="Выберите день"
             value={selectedDate}
@@ -43,7 +43,7 @@ function DateTimePicker({ index, onUpdateSchedule }) {
         </Grid>
 
         {/* Выбор времени начала */}
-        <Grid item xs={6}>
+        <Grid item xs={4}>
           <TimeField
             label="Время начала"
             value={selectedStartTime}
@@ -53,7 +53,7 @@ function DateTimePicker({ index, onUpdateSchedule }) {
         </Grid>
 
         {/* Выбор времени окончания */}
-        <Grid item xs={6}>
+        <Grid item xs={4}>
           <TimeField
             label="Время окончания"
             value={selectedEndTime}

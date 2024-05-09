@@ -12,7 +12,7 @@ const authRoute = require("./Routes/authRoute");
 const servRoute = require("./Routes/serviceRoute");
 const revRoute = require("./Routes/reviewRoute");
 const emplRoute = require("./Routes/employeeRoute");
-
+const bookingRoute = require("./Routes/bookingRoute");
 const app = express();
 
 app.use(cors());
@@ -23,6 +23,7 @@ app.use("/auth", authRoute);
 app.use("/serv", servRoute);
 app.use("/rev", revRoute);
 app.use("/empl", emplRoute);
+app.use("/book", bookingRoute);
 
 app.use(
   session({

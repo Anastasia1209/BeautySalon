@@ -9,6 +9,11 @@ const authMiddleware = require("../Middlewares/authMiddleware.js");
 const router = express.Router();
 
 router.get("/getempl", employeeController.getEmployees);
+router.get(
+  "/getemplbyserv/:serviceID",
+  employeeController.getEmployeesByService
+);
+
 router.get("/getemplbyid/:id", employeeController.getEmployeeById);
 router.post(
   "/addempl",

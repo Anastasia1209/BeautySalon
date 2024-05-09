@@ -39,12 +39,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-// const sections = [
-//   { title: "Цены и услуги", url: "/services" },
-//   { title: "Отзывы", url: "#" },
-// ];
-
-export default function NavMenu({ sections = [] }) {
+export default function NavMenu({ sections = [], buttonPath, buttonText }) {
   const classes = useStyles();
   // const { nav } = props;
   return (
@@ -59,9 +54,9 @@ export default function NavMenu({ sections = [] }) {
             </Typography>
 
             <Box>
-              <Link to="/login">
+              <Link to={buttonPath}>
                 <Button color="inherit" className={classes.button}>
-                  Войти
+                  {buttonText}
                 </Button>
               </Link>
             </Box>

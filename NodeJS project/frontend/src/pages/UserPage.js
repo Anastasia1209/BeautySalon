@@ -10,20 +10,22 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import NavMenu from "../components/NavMenu";
+import BookCard from "../components/BookCard";
 
 function UserPage() {
   const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({});
+  const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [error, setError] = useState("");
 
   // Функция для загрузки текущего пользователя
   const fetchCurrentUser = async () => {
     try {
-      const token = localStorage.getItem("authToken");
       const response = await axios.get("/auth/getuser", {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
       });
 
@@ -48,12 +50,35 @@ function UserPage() {
     fetchCurrentUser();
   }, [navigate]);
 
+  const fetchUserRegistrations = async () => {
+    try {
+      const response = await axios.get("/book/getbook", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
+      setRegistrations(response.data.registrations || []);
+    } catch (error) {
+      console.error(
+        "Ошибка при получении информации о записях на услуги:",
+        error
+      );
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchUserRegistrations();
+    }
+  }, [user]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevFormData) => ({
       ...prevFormData,
       [name]: value,
     }));
+    setError("");
   };
 
   const handleSubmit = async (e) => {
@@ -84,6 +109,28 @@ function UserPage() {
       fetchCurrentUser();
     } catch (error) {
       console.error("Error updating user:", error);
+      setError(
+        error.response?.data?.message || "Ошибка при обновлении пользователя"
+      );
+    }
+  };
+
+  const onCancel = async (registrationID) => {
+    try {
+      console.log(registrationID);
+      // Отправляем запрос на отмену регистрации
+      await axios.delete(`/book/delbook/${registrationID}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
+      console.log("Запись успешно отменена");
+      window.location.reload();
+
+      // Обновляем список регистраций после отмены
+      fetchUserRegistrations();
+    } catch (error) {
+      console.error("Ошибка при отмене регистрации:", error);
     }
   };
 
@@ -157,6 +204,7 @@ function UserPage() {
         >
           Сохранить
         </Button>
+        {error && <Typography color="error">{error}</Typography>}
         {/* Добавляем кнопку "Выйти" */}
         <Button
           onClick={handleLogout}
@@ -168,6 +216,7 @@ function UserPage() {
           Выйти
         </Button>
       </form>
+      <BookCard registrations={registrations} onCancel={onCancel} />
     </Container>
   );
 }

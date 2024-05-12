@@ -16,6 +16,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import NavMenu from "../components/NavMenu";
 import EmployeeCard from "../components/EmployeeCard";
 import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   formControl: {
@@ -38,6 +39,7 @@ function BookingForm() {
   const [availableDates, setAvailableDates] = useState([]);
   const [availableTimes, setAvailableTimes] = useState([]);
   const [userID, setUserID] = useState(null);
+  const navigate = useNavigate();
 
   const getUserIDFromToken = () => {
     const token = localStorage.getItem("authToken");
@@ -109,15 +111,20 @@ function BookingForm() {
   // Функция для определения, является ли дата недоступной
   const shouldDisableDate = (date) => {
     // Преобразуем дату из DatePicker к ISO-формату (гггг-мм-дд)
-    const formattedDate = date.toISOString().split("T")[0];
+    //const formattedDate = date.toString().split("T")[0];
 
+    const availDate = availableDates.map((d) => new Date(d).getDate());
+
+    //console.log("formatted date: " + formattedDate);
     // Преобразуем даты из базы данных к ISO-формату (гггг-мм-дд)
-    const availableISOdates = availableDates.map(
-      (d) => new Date(d).toISOString().split("T")[0]
-    );
+    // const availableISOdates = availableDates.map(
+    //   (d) => new Date(d).toString().split("T")[0]
+    // );
+    //console.log("available dates: " + availableISOdates);
 
+    return !availDate.includes(new Date(date).getDate());
     // Сравниваем даты
-    return !availableISOdates.includes(formattedDate);
+    //return !availableISOdates.includes(formattedDate);
   };
   //////////////////////////////////////
   // // Загрузка доступных временных слотов на выбранную дату
@@ -147,10 +154,20 @@ function BookingForm() {
     const fetchTimeSlots = async () => {
       try {
         if (selectedDate) {
-          const formattedDate = selectedDate.toISOString().split("T")[0];
+          console.log(new Date(selectedDate).getTime() + " asdasdas");
+          const test = new Date(selectedDate).toLocaleDateString();
+          const formattedDate = new Date(selectedDate)
+            .toISOString()
+            .split("T")[0];
+          // console.log("asdasfasfas   " + new Date(selectedDate));
+          console.log("qqqqqqqqqqqqqqq " + formattedDate);
 
-          const response = await axios.get(`/book/getslots/${formattedDate}`);
+          const timeDate = new Date(selectedDate).getTime();
+          const response = await axios.get(`/book/getslots/${timeDate}`);
           const timeSlots = response.data.timeSlots || [];
+
+          console.log("pzda");
+          console.log(response.data);
 
           // Разделяем временные слоты по мастерам
           const groupedByEmployee = timeSlots.reduce((acc, slot) => {
@@ -210,7 +227,8 @@ function BookingForm() {
     const data = {
       userID,
       employeeID: selectedEmployee,
-      date: selectedDate.toISOString().split("T")[0],
+      date: new Date(selectedDate).getTime(),
+      //date: selectedDate.toISOString().split("T")[0],
       startTime: selectedTime,
       notes,
     };
@@ -218,6 +236,7 @@ function BookingForm() {
     try {
       const response = await axios.post("/book/booking", data);
       console.log("Регистрация успешно добавлена:", response.data);
+      navigate("/user");
       // Выполните действия после успешного добавления регистрации
     } catch (error) {
       console.error("Ошибка при добавлении регистрации:", error);
@@ -266,49 +285,6 @@ function BookingForm() {
         </FormControl>
       </LocalizationProvider>
 
-      {/* Выбор времени
-      <FormControl fullWidth className={classes.formControl}>
-        <InputLabel id="time-label">Время</InputLabel>
-        <Select
-          labelId="time-label"
-          value={selectedTime}
-          onChange={(e) => setSelectedTime(e.target.value)}
-          displayEmpty
-        >
-          <MenuItem value="">
-            <em>Выберите время</em>
-          </MenuItem>
-          {availableTimes &&
-            Array.isArray(availableTimes) &&
-            availableTimes.map((slot) => (
-              <MenuItem key={slot.id} value={slot.startTime}>
-                {dayjs(slot.startTime).format("HH:mm")}
-              </MenuItem>
-            ))}
-        </Select>
-      </FormControl>
-          */}
-      {/* Выбор мастера 
-      <FormControl fullWidth className={classes.formControl}>
-        <InputLabel id="employee-label">Мастер</InputLabel>
-        <Select
-          labelId="employee-label"
-          value={selectedEmployee}
-          onChange={(e) => setSelectedEmployee(e.target.value)}
-          displayEmpty
-        >
-          <MenuItem value="">
-            <em>Выберите мастера</em>
-          </MenuItem>
-          {availableEmployee &&
-            Array.isArray(availableEmployee) &&
-            availableEmployee.map((employee) => (
-              <MenuItem key={employee.employeeID} value={employee.employeeID}>
-                {employee.name}
-              </MenuItem>
-            ))}
-        </Select>
-          </FormControl>*/}
       <div>
         {/* Карточки мастеров */}
         {availableEmployee.map((employee) => {

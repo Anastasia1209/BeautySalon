@@ -10,12 +10,10 @@ function MainPage() {
   const [userRole, setUserRole] = useState("USER");
 
   useEffect(() => {
-    // Замените эту проверку вашей логикой проверки аутентификации.
     const checkAuth = () => {
       const token = localStorage.getItem("authToken");
       if (token) {
         setIsAuthenticated(true);
-        // Расшифруйте токен, чтобы получить роль пользователя
         const decodedToken = jwtDecode(token);
         if (decodedToken && decodedToken.role) {
           setUserRole(decodedToken.role);
@@ -38,12 +36,13 @@ function MainPage() {
   const sections = [
     { title: "Услуги", url: "/services" },
     { title: "Отзывы", url: "/review" },
+    { title: "Сотрудники", url: "/employees" },
   ];
 
   const sectionsAdmin = [
     { title: "Услуги", url: "/services" },
     { title: "Сотрудники", url: "/employees" },
-    { title: "Админ", url: "/admin" },
+    //  { title: "Админ", url: "/admin" },
   ];
 
   const buttonPath = isAuthenticated ? "/user" : "/login";

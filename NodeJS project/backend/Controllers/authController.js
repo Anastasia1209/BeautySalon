@@ -88,15 +88,16 @@ class authController {
       const user = await clientPr.users.findUnique({
         where: { email },
       });
-
-      if (!user) {
-        return res.status(401).json({ message: "Пользователь не найден" });
-      }
-
       const isPasswordValid = bcrypt.compareSync(password, user.password);
-      if (!isPasswordValid) {
-        return res.status(401).json({ message: "Неверный пароль" });
+
+      if (!user || !isPasswordValid) {
+        console.log("Неверный логин или пароль");
+        return res.status(401).json({ message: "Неверный логин или пароль" });
       }
+
+      // if () {
+      //   return res.status(401).json({ message: "Неверный пароль" });
+      // }
 
       // const accessToken = jwt.sign({id: user.id}, process.env.ACCESS_TOKEN_SECRET);
       //res.cookie("accessToken", accessToken);
@@ -104,8 +105,8 @@ class authController {
       //console.log(user.userID + " fffff " + user.role);
       //вопросики с ролями и так ли айди
       const token = generateAccessToken(user.userID, user.role);
-      console.log("/////////////////////////");
-      console.log(user.userID);
+      console.log("---------------------");
+      console.log("userID ", user.userID);
       return res.json({ token });
     } catch (error) {
       // next(error);
@@ -119,7 +120,7 @@ class authController {
       // Получение userID из middleware
       const { userID } = req.user;
 
-      console.log(userID);
+      console.log("userID", userID);
       // Найти пользователя по userID
       const user = await clientPr.users.findFirst({
         where: {
@@ -184,33 +185,35 @@ class authController {
     });
 
     if (!existingUser) {
+      console.log("Пользователь не найден");
       return res.status(404).json({ message: "Пользователь не найден" });
     }
 
-    const { name, phone, email, password } = req.body;
+    const { name, phone, email } = req.body;
 
-    const updateData = {};
-
-    if (name !== undefined) {
-      updateData.name = name;
+    if (!name || !phone || !email) {
+      console.log("Все поля должны быть заполнены");
+      return res
+        .status(400)
+        .json({ message: "Все поля должны быть заполнены" });
     }
 
-    if (phone !== undefined) {
-      updateData.phone = phone;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      console.log("Некорректный email");
+      return res.status(400).json({ message: "Некорректный email" });
     }
 
-    if (email !== undefined) {
-      updateData.email = email;
-    }
+    const updateData = {
+      name,
+      phone,
+      email,
+    };
 
-    if (password !== undefined) {
-      const hashedPassword = await bcrypt.hash(password, 5);
-      updateData.password = hashedPassword;
-    }
-    // Проверяем, есть ли данные для обновления
-    if (Object.keys(updateData).length === 0) {
-      return res.status(400).json({ error: "Нет данных для обновления" });
-    }
+    // // Хэширование пароля перед обновлением
+    // const hashedPassword = await bcrypt.hash(password, 5);
+    // updateData.password = hashedPassword;
+
     try {
       // Выполнение обновления пользователя в базе данных
       const updatedUser = await clientPr.users.update({
@@ -232,6 +235,7 @@ class authController {
         },
       });
     } catch (error) {
+      console.log("Error updating user");
       console.error("Error updating user:", error);
       res.status(500).json({ message: "Error updating user" });
     }

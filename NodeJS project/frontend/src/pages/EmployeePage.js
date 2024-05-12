@@ -17,8 +17,8 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: theme.spacing(4),
   },
   employeeName: {
-    textDecoration: "none", // Убираем подчеркивание для ссылок
-    color: "inherit", // Наследуем цвет от родителя
+    textDecoration: "none",
+    color: "inherit",
   },
 }));
 
@@ -26,13 +26,14 @@ function EmployeesPage() {
   const [employees, setEmployees] = useState([]);
   const classes = useStyles();
   const navigate = useNavigate();
+  const [averageRatings, setAverageRatings] = useState({});
 
   const handleAddEmployee = () => {
     navigate("/empl/addempl");
   };
 
   const token = localStorage.getItem("authToken");
-  let userRole = "USER"; // Устанавливаем значение по умолчанию
+  let userRole = "USER";
 
   if (token) {
     const decodedToken = jwtDecode(token);
@@ -41,17 +42,36 @@ function EmployeesPage() {
     }
   }
 
-  // Загрузка данных сотрудников из API при монтировании компонента
   useEffect(() => {
     axios
-      .get("/empl/getempl") // API для получения списка сотрудников
+      .get("/empl/getempl")
       .then((response) => {
-        setEmployees(response.data); // Устанавливаем список сотрудников в состояние
+        setEmployees(response.data);
       })
       .catch((error) => {
         console.error("Ошибка загрузки данных о сотрудниках:", error);
       });
   }, []);
+
+  useEffect(() => {
+    const fetchAverageRatings = async () => {
+      try {
+        const ratings = {};
+        for (const employee of employees) {
+          const response = await axios.get(`/rev/getrating/${employee.id}`);
+          ratings[employee.id] = response.data.averageRating;
+        }
+        setAverageRatings(ratings);
+      } catch (error) {
+        console.error(
+          "Ошибка при получении среднего рейтинга для сотрудников:",
+          error
+        );
+      }
+    };
+
+    fetchAverageRatings();
+  }, [employees]);
 
   return (
     <Container>
@@ -59,11 +79,16 @@ function EmployeesPage() {
       <Typography variant="h4" className={classes.title}>
         Список сотрудников
       </Typography>
-      <Button variant="contained" color="primary" onClick={handleAddEmployee}>
-        Добавить сотрудника
-      </Button>
-      {/* Передаем список сотрудников в компонент EmployeeList */}
-      <EmployeeList employees={employees} userRole={userRole} />
+      {userRole === "ADMIN" && (
+        <Button variant="contained" color="primary" onClick={handleAddEmployee}>
+          Добавить сотрудника
+        </Button>
+      )}
+      <EmployeeList
+        employees={employees}
+        userRole={userRole}
+        averageRatings={averageRatings}
+      />
     </Container>
   );
 }

@@ -2,6 +2,7 @@ import React from "react";
 import { Container, Grid, Paper, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { Link } from "react-router-dom"; // Импортируем Link для кликабельности
+import { Rating } from "@mui/material";
 
 // Определяем стили для компонента
 const useStyles = makeStyles((theme) => ({
@@ -19,7 +20,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 // Компонент для отображения списка сотрудников
-function EmployeeList({ employees, userRole }) {
+function EmployeeList({ employees, userRole, averageRatings }) {
   const classes = useStyles();
 
   return (
@@ -43,13 +44,15 @@ function EmployeeList({ employees, userRole }) {
                   {employee.name} {employee.surname}
                 </Typography>
 
-                {/* Email и номер телефона сотрудника */}
+                {/* Email сотрудника */}
                 <Typography variant="body2">Email: {employee.email}</Typography>
 
                 {/* Список услуг, предоставляемых сотрудником */}
                 <Typography variant="body2">
                   Услуги: {employee.services.join(", ")}
                 </Typography>
+                {/* Отображение среднего рейтинга */}
+                <Rating value={averageRatings[employee.id] || 0} readOnly />
               </Paper>
             </Link>
           </Grid>

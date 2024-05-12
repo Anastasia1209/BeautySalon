@@ -21,7 +21,7 @@ function EditEmployeePage() {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         });
-
+        console.log(response.data);
         setInitialData(response.data);
         setLoading(false);
       } catch (error) {

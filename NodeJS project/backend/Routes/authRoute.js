@@ -27,7 +27,18 @@ router.post(
   ],
   authController.registration
 );
-router.put("/upduser/:id", authMiddleware, authController.updateUser);
+router.put(
+  "/upduser/:id",
+  [
+    check("name", "Имя пользователя не может быть пустым")
+      .notEmpty()
+      .isLength({ min: 2, max: 15 }),
+    check("phone", "Введите номер телефона").notEmpty(),
+    check("email", "Введите правильный email").notEmpty().isEmail(),
+  ],
+  authMiddleware,
+  authController.updateUser
+);
 router.delete("/deluser/:id", authMiddleware, authController.deleteUser);
 router.post(
   "/login",

@@ -20,4 +20,12 @@ router.get(
 );
 
 router.post("/booking", bookingController.addRegistration);
+router.get("/getbook", authMiddleware, bookingController.getUserRegistrations);
+
+router.delete(
+  "/delbook/:registrationID",
+  authMiddleware,
+  bookingController.cancelRegistration
+);
+
 module.exports = router;

@@ -50,9 +50,11 @@ function ServicesPage() {
       <Typography variant="h4" className={classes.title}>
         Цены и услуги
       </Typography>
-      <Button variant="contained" color="primary" onClick={handleAddService}>
-        Добавить услугу
-      </Button>
+      {userRole === "ADMIN" && (
+        <Button variant="contained" color="primary" onClick={handleAddService}>
+          Добавить услугу
+        </Button>
+      )}
       <ServicesList services={services} userRole={userRole} />
     </Container>
   );

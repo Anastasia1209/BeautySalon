@@ -7,6 +7,8 @@ import Grid from "@material-ui/core/Grid";
 //import Link from "@material-ui/core/Link";
 import { Button } from "@material-ui/core";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+// import { jwtDecode } from "jwt-decode";
 
 const useStyles = makeStyles((theme) => ({
   mainPost: {
@@ -38,8 +40,31 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function MainPost(props) {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // const [userRole, setUserRole] = useState("USER");
+
+  useEffect(() => {
+    // Замените эту проверку вашей логикой проверки аутентификации.
+    const checkAuth = () => {
+      const token = localStorage.getItem("authToken");
+      if (token) {
+        setIsAuthenticated(true);
+        // Расшифруйте токен, чтобы получить роль пользователя
+        // const decodedToken = jwtDecode(token);
+        // if (decodedToken && decodedToken.role) {
+        //   setUserRole(decodedToken.role);
+        // }
+      } else {
+        setIsAuthenticated(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
   const classes = useStyles();
   const { post } = props;
+  const bookingLink = isAuthenticated ? "/bookingform" : "/login";
 
   return (
     <Paper
@@ -69,7 +94,7 @@ export default function MainPost(props) {
             <Typography variant="h6" color="inherit" paragraph>
               {post.description}
             </Typography>
-            <Link to="/bookingform">
+            <Link to={bookingLink}>
               <Button
                 variant="contained"
                 color="secondary"

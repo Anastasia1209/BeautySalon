@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
 const secret = process.env.ACCESS_TOKEN_SECRET;
+const dayjs = require("dayjs");
 
 // function convertDateToISO(dateString) {
 //   // Создаем объект даты из строки в формате YYYY-MM-DD
@@ -36,6 +37,13 @@ class bookingController {
               serviceID: parseInt(serviceID, 10),
             },
           },
+          schedules: {
+            some: {
+              date: {
+                gte: new Date(),
+              },
+            },
+          },
         },
         select: {
           employeeID: true,
@@ -52,12 +60,17 @@ class bookingController {
           .json({ message: "No employees found for the specified service" });
       }
 
+      //  const currentDate = new Date().toISOString().slice(0, 10);
+
       // Поиск расписаний для мастеров, которые предоставляют данную услугу
       const schedules = await clientPr.schedule.findMany({
         where: {
           employeeID: {
             in: employeeIDs, // Используем массив идентификаторов мастеров
           },
+          // date: {
+          //   gte: currentDate, // Дата не раньше текущей даты
+          // },
         },
         select: {
           date: true, // Выбираем только дату
@@ -91,10 +104,30 @@ class bookingController {
       if (!date) {
         return res.status(400).json({ message: "Date parameter is required" });
       }
-
+      //console.log(new Date(date));
+      // const test = date.split(".");
+      // const test2 = test[2] + "." + test[1] + "." + test[0];
+      // console.log(test2);
+      console.log(new Date(parseInt(date)));
+      const formatDate = new Date(parseInt(date));
+      console.log("foramta: " + formatDate);
       // Преобразуем дату в формат Date
-      const selectedDate = new Date(date);
+      // const test = new Date(
+      //   formatDate.setHours(
+      //     formatDate.getHours() - formatDate.getTimezoneOffset()
+      //   )
+      // );
 
+      console.log(formatDate.getTimezoneOffset());
+      console.log(formatDate.getHours());
+
+      const selectedDate = new Date(
+        formatDate.setHours(
+          formatDate.getHours() - formatDate.getTimezoneOffset() / 60
+        )
+      );
+      console.log(formatDate);
+      console.log(selectedDate);
       // Поиск всех временных слотов на заданную дату
       const timeSlots = await clientPr.schedule.findMany({
         where: {
@@ -196,11 +229,19 @@ class bookingController {
           .json({ message: "Все поля должны быть заполнены" });
       }
 
+      const dateOffset = new Date(date);
+      const selectedDate = new Date(
+        dateOffset.setHours(
+          dateOffset.getHours() - dateOffset.getTimezoneOffset() / 60
+        )
+      );
+
+      console.log(new Date(startTime));
       // Проверка наличия времени в расписании мастера
       const availableSchedule = await clientPr.schedule.findFirst({
         where: {
           employeeID,
-          date: new Date(date),
+          date: selectedDate,
           startTime: new Date(startTime),
         },
       });
@@ -238,15 +279,78 @@ class bookingController {
     }
   }
 
+  //получение инфы
+  async getUserRegistrations(req, res) {
+    try {
+      //   const userID = parseInt(req.params.userID, 10);
+      const userID = req.user.userID;
+
+      console.log(userID);
+      // Поиск записей о регистрации для конкретного пользователя (userID)
+      const registrations = await clientPr.registration.findMany({
+        where: {
+          userID: userID,
+          dateTime: {
+            gte: new Date(), // Фильтр для отбора записей не позднее текущего времени
+          },
+        },
+        include: {
+          employee: {
+            include: {
+              // Включаем информацию об услуге
+              services: {
+                include: {
+                  service: {
+                    select: {
+                      name: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // Если записей о регистрации не найдено, вернуть пустой массив
+      if (!registrations || registrations.length === 0) {
+        return res.status(404).json({ message: "Записи на услуги не найдены" });
+      }
+
+      // Преобразование данных о регистрации в требуемый формат
+      const formattedRegistrations = registrations.map((registration) => ({
+        registrationID: registration.registrationID,
+        date: registration.dateTime.toISOString().split("T")[0],
+        time: registration.dateTime.toISOString().split("T")[1].slice(0, 5),
+        service: registration.employee.services[0].service.name,
+        employee: `${registration.employee.name} ${registration.employee.surname}`,
+      }));
+
+      // Возвращение информации о записях на услуги
+      res.status(200).json({
+        message: "Информация о записях на услуги получена успешно",
+        registrations: formattedRegistrations,
+      });
+    } catch (error) {
+      console.error(
+        "Ошибка при получении информации о записях на услуги:",
+        error
+      );
+      res.status(500).json({
+        message: "Ошибка при получении информации о записях на услуги",
+      });
+    }
+  }
+
   async cancelRegistration(req, res) {
     try {
       // Получаем ID регистрации из запроса
-      const { registrationId } = req.params;
-
+      const { registrationID } = req.params;
+      console.log(registrationID);
       // Поиск регистрации по ID
       const registration = await clientPr.registration.findUnique({
         where: {
-          registrationId: parseInt(registrationId, 10),
+          registrationID: parseInt(registrationID, 10),
         },
       });
 
@@ -254,21 +358,33 @@ class bookingController {
         console.log("Регистрация не найдена");
         return res.status(404).json({ message: "Регистрация не найдена" });
       }
-
+      const selectedDate = new Date(
+        registration.dateTime.setHours(
+          registration.dateTime.getHours() -
+            registration.dateTime.getTimezoneOffset() / 60
+        )
+      );
+      console.log(new Date(selectedDate));
       // Восстанавливаем время в расписании мастера
       await clientPr.schedule.create({
         data: {
-          employeeId: registration.employeeID,
-          date: registration.dateTime,
+          employee: {
+            connect: { employeeID: registration.employeeID },
+          },
+          //  employeeId: registration.employeeID,
+          // date: registration.dateTime,
+          date: selectedDate,
+
           startTime: registration.dateTime,
-          endTime: registration.dateTime, // Вам может понадобиться настроить длительность
+          // endTime: registration.dateTime,
+          endTime: dayjs(registration.dateTime).add(1, "hour").toDate(), // Увеличиваем на один час
         },
       });
 
       // Удаляем регистрацию
       await clientPr.registration.delete({
         where: {
-          registrationId: registration.registrationID,
+          registrationID: registration.registrationID,
         },
       });
 

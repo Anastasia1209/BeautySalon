@@ -8,9 +8,8 @@ import AddEmployeeForm from "./AddEmployee";
 function AdminPage() {
   const sections = [
     { title: "Услуги", url: "/services" },
-    { title: "Отзывы", url: "#" },
+    // { title: "Отзывы", url: "#" },
     { title: "Сотрудники", url: "/employees" },
-    //  { title: "", url: "#"},
   ];
   return (
     <div className="App">

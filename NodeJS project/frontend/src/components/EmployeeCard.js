@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, Typography, Button } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import dayjs from "dayjs";
@@ -17,7 +17,6 @@ const useStyles = makeStyles((theme) => ({
   },
   timeButton: {
     margin: theme.spacing(0.5),
-    // Добавьте стиль для подсвечивания кнопки
     "&.selected": {
       backgroundColor: theme.palette.primary.light,
       color: theme.palette.common.white,
@@ -36,6 +35,17 @@ const EmployeeCard = ({
 }) => {
   const classes = useStyles();
 
+  const [localSelectedTime, setLocalSelectedTime] = useState(selectedTime);
+  const handleTimeSlotClick = (time) => {
+    // Если текущее время равно времени на кнопке, то отменяем выбор
+    if (localSelectedTime === time) {
+      setLocalSelectedTime(null);
+    } else {
+      setLocalSelectedTime(time);
+    }
+    onTimeSlotClick(time, employeeID);
+  };
+
   return (
     <Card className={classes.card}>
       <CardContent>
@@ -47,9 +57,18 @@ const EmployeeCard = ({
               variant="outlined"
               color="inherit"
               className={`${classes.timeButton} ${
-                slot.startTime === selectedTime ? "selected" : ""
+                slot.startTime === localSelectedTime ? "selected" : ""
               }`}
               //  onClick={() => onTimeSlotClick(slot.startTime)}
+              // onClick={() => {
+              //   console.log(
+              //     "Нажатие на время:",
+              //     slot.startTime,
+              //     "для мастера:",
+              //     employeeID
+              //   );
+              //   onTimeSlotClick(slot.startTime, employeeID);
+              // }}
               onClick={() => {
                 console.log(
                   "Нажатие на время:",
@@ -57,7 +76,7 @@ const EmployeeCard = ({
                   "для мастера:",
                   employeeID
                 );
-                onTimeSlotClick(slot.startTime, employeeID);
+                handleTimeSlotClick(slot.startTime);
               }}
             >
               {dayjs(slot.startTime).tz("UTC", true).format("HH:mm")}

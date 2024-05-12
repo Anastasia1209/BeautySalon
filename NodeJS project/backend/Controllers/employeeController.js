@@ -109,6 +109,30 @@ class employeeController {
     try {
       // Извлечение данных из тела запроса
       const { name, surname, positions, email, services, schedules } = req.body;
+      const { date, startTime, endTime } = schedules[0];
+
+      if (!name || !surname || !positions || !email) {
+        console.log("Все поля должны быть заполнены");
+        return res
+          .status(400)
+          .json({ message: "Все поля должны быть заполнены" });
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        console.log("Некорректный email");
+        return res.status(400).json({ message: "Некорректный email" });
+      }
+
+      if (new Date(date) < new Date()) {
+        console.log("Invalid date");
+        return res.status(409).json({ message: "Invalid date" });
+      }
+
+      if (new Date(startTime) > new Date(endTime)) {
+        console.log("Invalid start and end time");
+        return res.status(409).json({ message: "Invalid start and end time" });
+      }
 
       // Проверка существования сотрудника с таким же email
       const existingEmployee = await clientPr.employees.findFirst({
@@ -141,9 +165,6 @@ class employeeController {
       const timeSlots = [];
       ///////////////////////////////////////
 
-      //for (const schedule of schedules) {
-      const { date, startTime, endTime } = schedules[0];
-
       const dateUTC = new Date(date);
       const startTimeUTC = new Date(startTime);
       const endTimeUTC = new Date(endTime);
@@ -172,43 +193,6 @@ class employeeController {
       console.log("Start time: ", startLocal);
       console.log("End time: ", endLocal);
       console.log("------------------------------");
-
-      //Разделение времени на часовые интервалы
-      // let currentTime = dayjs(startTimeISO);
-      // const endTimeDate = dayjs(endTimeISO);
-
-      // console.log(currentTime);
-
-      // const dateISO = convertToISO(date, "00:00");
-      // const startTimeISO = convertToISO(date, startTime);
-      // const endTimeISO = convertToISO(date, endTime);
-
-      //let startLocalTemp = startLocal;
-      // while (currentTime.isBefore(endTimeDate)) {
-      //   // Добавление интервала времени в список
-      //   timeSlots.push({
-      //     employeeID: newEmployee.employeeID,
-      //     date: dateISO,
-      //     startTime: currentTime.toISOString(),
-      //     endTime: currentTime.add(1, "hour").toISOString(),
-      //   });
-
-      //   // Переход к следующему часовому интервалу
-      //   currentTime = currentTime.add(1, "hour");
-      // }
-      // console.log(currentTime);
-
-      // Проверка оставшегося времени и добавление последнего интервала, если необходимо
-      // const remainingTime = endTimeDate.diff(currentTime, "minute");
-      // if (remainingTime >= 60) {
-      //   timeSlots.push({
-      //     employeeID: newEmployee.employeeID,
-      //     date: dateISO,
-      //     startTime: currentTime.toISOString(),
-      //     endTime: endTimeDate.toISOString(),
-      //   });
-      // }
-      //}
 
       while (startLocal.getHours() < endLocal.getHours()) {
         timeSlots.push({

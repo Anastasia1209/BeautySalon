@@ -13,7 +13,7 @@ function BookCard({ registrations, onCancel }) {
   return (
     <Box sx={{ mt: 3 }}>
       <Typography variant="h5" gutterBottom>
-        Ваши записи:
+        Ваши записи
       </Typography>
       {registrations.map((registration, index) => (
         <Card key={index} sx={{ mb: 2 }}>

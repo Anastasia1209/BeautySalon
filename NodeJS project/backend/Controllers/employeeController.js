@@ -109,7 +109,6 @@ class employeeController {
     try {
       // Извлечение данных из тела запроса
       const { name, surname, positions, email, services, schedules } = req.body;
-      const { date, startTime, endTime } = schedules[0];
 
       if (!name || !surname || !positions || !email) {
         console.log("Все поля должны быть заполнены");
@@ -124,16 +123,6 @@ class employeeController {
         return res.status(400).json({ message: "Некорректный email" });
       }
 
-      if (new Date(date) < new Date()) {
-        console.log("Invalid date");
-        return res.status(409).json({ message: "Invalid date" });
-      }
-
-      if (new Date(startTime) > new Date(endTime)) {
-        console.log("Invalid start and end time");
-        return res.status(409).json({ message: "Invalid start and end time" });
-      }
-
       // Проверка существования сотрудника с таким же email
       const existingEmployee = await clientPr.employees.findFirst({
         where: {
@@ -142,6 +131,7 @@ class employeeController {
       });
 
       if (existingEmployee) {
+        console.log("Employee with this email already exists");
         return res
           .status(409)
           .json({ message: "Employee with this email already exists" });
@@ -161,58 +151,77 @@ class employeeController {
         },
       });
 
-      // Добавление расписания для нового сотрудника
-      const timeSlots = [];
-      ///////////////////////////////////////
+      schedules.forEach(async (schedule) => {
+        const { date, startTime, endTime } = schedule;
 
-      const dateUTC = new Date(date);
-      const startTimeUTC = new Date(startTime);
-      const endTimeUTC = new Date(endTime);
+        if (new Date(date) < new Date()) {
+          console.log("Invalid date");
+          return res.status(409).json({ message: "Invalid date" });
+        }
 
-      const dateLocal = new Date(
-        dateUTC.setHours(dateUTC.getHours() - dateUTC.getTimezoneOffset() / 60)
-      );
+        if (new Date(startTime) > new Date(endTime)) {
+          console.log("Invalid start and end time");
+          return res
+            .status(409)
+            .json({ message: "Invalid start and end time" });
+        }
 
-      const startLocal = new Date(
-        new Date(
-          startTimeUTC.setHours(
-            startTimeUTC.getHours() - startTimeUTC.getTimezoneOffset() / 60
+        // Добавление расписания для нового сотрудника
+        const timeSlots = [];
+
+        ///////////////////////////////////////
+
+        const dateUTC = new Date(date);
+        const startTimeUTC = new Date(startTime);
+        const endTimeUTC = new Date(endTime);
+
+        const dateLocal = new Date(
+          dateUTC.setHours(
+            dateUTC.getHours() - dateUTC.getTimezoneOffset() / 60
           )
-        ).setDate(dateLocal.getDate())
-      );
+        );
 
-      const endLocal = new Date(
-        endTimeUTC.setHours(
-          endTimeUTC.getHours() - endTimeUTC.getTimezoneOffset() / 60
-        )
-      );
+        const startLocal = new Date(
+          new Date(
+            startTimeUTC.setHours(
+              startTimeUTC.getHours() - startTimeUTC.getTimezoneOffset() / 60
+            )
+          ).setDate(dateLocal.getDate())
+        );
 
-      console.log("------------------------------");
+        const endLocal = new Date(
+          endTimeUTC.setHours(
+            endTimeUTC.getHours() - endTimeUTC.getTimezoneOffset() / 60
+          )
+        );
 
-      console.log("Date: ", dateLocal);
-      console.log("Start time: ", startLocal);
-      console.log("End time: ", endLocal);
-      console.log("------------------------------");
+        console.log("------------------------------");
 
-      while (startLocal.getHours() < endLocal.getHours()) {
-        timeSlots.push({
-          employeeID: newEmployee.employeeID,
-          date: dateLocal,
-          startTime: new Date(startLocal),
-          endTime: new Date(startLocal.setHours(startLocal.getHours() + 1)),
-        });
-      }
+        console.log("Date: ", dateLocal);
+        console.log("Start time: ", startLocal);
+        console.log("End time: ", endLocal);
+        console.log("------------------------------");
 
-      new Date(startLocal.setDate(dateLocal.getDate()));
-      console.log(timeSlots);
-      // Добавление расписания в базу данных
-      if (timeSlots.length > 0) {
-        await clientPr.schedule.createMany({
-          data: timeSlots,
-        });
+        while (startLocal.getHours() < endLocal.getHours()) {
+          timeSlots.push({
+            employeeID: newEmployee.employeeID,
+            date: dateLocal,
+            startTime: new Date(startLocal),
+            endTime: new Date(startLocal.setHours(startLocal.getHours() + 1)),
+          });
+        }
 
-        //clientPr.schedule.upsert()
-      }
+        new Date(startLocal.setDate(dateLocal.getDate()));
+        console.log(timeSlots);
+        // Добавление расписания в базу данных
+        if (timeSlots.length > 0) {
+          await clientPr.schedule.createMany({
+            data: timeSlots,
+          });
+
+          //clientPr.schedule.upsert()
+        }
+      });
 
       // Возврат данных о созданном сотруднике
       res.status(201).json({

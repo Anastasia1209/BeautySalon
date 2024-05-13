@@ -4,6 +4,7 @@ import MainPost from "../components/MainPost";
 import NavMenu from "../components/NavMenu";
 import { Container } from "@material-ui/core";
 import { jwtDecode } from "jwt-decode";
+import backgroundImage from "../back.jpg";
 
 function MainPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -29,13 +30,15 @@ function MainPage() {
   const post = {
     title: "Добро пожаловать в салон красоты!",
     description: "Насладитесь лучшим сервисом в нашем городе",
-    image: "https://source.unsplash.com/random",
+    // image: "https://source.unsplash.com/random",
+    image: `url(${backgroundImage})`,
+
     imageText: "salon",
   };
 
   const sections = [
     { title: "Услуги", url: "/services" },
-    { title: "Отзывы", url: "/review" },
+    //   { title: "Отзывы", url: "/review" },
     { title: "Сотрудники", url: "/employees" },
   ];
 

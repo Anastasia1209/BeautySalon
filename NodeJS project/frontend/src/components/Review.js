@@ -90,6 +90,8 @@ const AddReview = ({ employeeID, onReviewAdded }) => {
         // Очистить форму после успешного добавления отзыва
         setRating(0);
         setComment("");
+        window.location.reload();
+
         console.log("Review added successfully");
       } else {
         console.log("Error adding review");

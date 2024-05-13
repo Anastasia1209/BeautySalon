@@ -329,8 +329,6 @@ class authController {
   async logOut(req, res) {
     try {
       res.clearCookie("authToken");
-
-      // Отправляем успешный ответ о выходе из аккаунта
       res.status(200).json({ message: "Logged out successfully" });
       //   });
     } catch (e) {

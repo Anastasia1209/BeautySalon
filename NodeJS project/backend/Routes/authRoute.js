@@ -45,7 +45,7 @@ router.post(
   [check("email", "Введите правильный email").notEmpty().isEmail()],
   authController.login
 );
-router.post("/logout", authController.logOut);
+router.post("/logout", authMiddleware, authController.logOut);
 //router.post("/refresh", AuthValidator.refresh, AuthController.refresh);
 
 module.exports = router;

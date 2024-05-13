@@ -9,17 +9,23 @@ const bookingController = require("../Controllers/bookingController.js");
 
 const router = express.Router();
 
-router.get("/getslots/:date", bookingController.getTimeSlotsForDate);
+router.get(
+  "/getslots/:date",
+  authMiddleware,
+  bookingController.getTimeSlotsForDate
+);
 router.get(
   "/getdate/:serviceID",
+  authMiddleware,
   bookingController.getAvailableDatesForService
 );
 router.get(
   "/getemployees/:serviceID/:date",
+  authMiddleware,
   bookingController.getEmployeesAndTimeForDate
 );
 
-router.post("/booking", bookingController.addRegistration);
+router.post("/booking", authMiddleware, bookingController.addRegistration);
 router.get("/getbook", authMiddleware, bookingController.getUserRegistrations);
 
 router.delete(

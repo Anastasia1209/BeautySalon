@@ -10,13 +10,16 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 // import { jwtDecode } from "jwt-decode";
 
+import backgroundImage from "../back.jpg";
+
 const useStyles = makeStyles((theme) => ({
   mainPost: {
     position: "relative",
     backgroundColor: theme.palette.grey[800],
     color: theme.palette.common.white,
     marginBottom: theme.spacing(4),
-    backgroundImage: "url(https://source.unsplash.com/random)",
+    // backgroundImage: "url(https://source.unsplash.com/random)",
+    backgroundImage: `url(${backgroundImage})`,
     backgroundSize: "cover",
     backgroundRepeat: "no-repeat",
     backgroundPosition: "center",
@@ -44,7 +47,6 @@ export default function MainPost(props) {
   // const [userRole, setUserRole] = useState("USER");
 
   useEffect(() => {
-    // Замените эту проверку вашей логикой проверки аутентификации.
     const checkAuth = () => {
       const token = localStorage.getItem("authToken");
       if (token) {

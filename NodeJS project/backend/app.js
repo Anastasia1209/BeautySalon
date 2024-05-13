@@ -1,9 +1,7 @@
 require("dotenv").config({ path: ".env" });
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
-
 const cors = require("cors");
-
 const express = require("express");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
@@ -16,7 +14,6 @@ const bookingRoute = require("./Routes/bookingRoute");
 const app = express();
 
 app.use(cors());
-
 app.use(cookieParser());
 app.use(express.json());
 app.use("/auth", authRoute);
@@ -76,11 +73,6 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
-// app.use (
-//     Fingerprint({
-//         parameters: [Fingerprint.useragent, Fingerprint.acceptHeaders],
-//     })
-// );
 app.get("/", (req, res) => {
   res.send("Добро пожаловать в салон красоты");
 });

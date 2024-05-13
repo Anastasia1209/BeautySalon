@@ -1,7 +1,12 @@
 import React from "react";
-import { Switch, Router, Route, Routes } from "react-router-dom";
+import { Route, Navigate } from "react-router-dom";
 
-const AppRouter = () => {
-  return <div></div>;
+const AppRouter = ({ isAuthenticated, ...props }) => {
+  if (isAuthenticated) {
+    return <Route {...props} />;
+  } else {
+    return <Navigate to="/login" />;
+  }
 };
+
 export default AppRouter;

@@ -8,11 +8,7 @@ const authMiddleware = require("../Middlewares/authMiddleware.js");
 const router = express.Router();
 
 router.post("/addreview", authMiddleware, reviewController.addReview);
-router.get(
-  "/getrewempl/:id",
-  authMiddleware,
-  reviewController.getReviewsByEmployee
-);
+router.get("/getrewempl/:id", reviewController.getReviewsByEmployee);
 router.get("/getrating/:id", reviewController.getAverageRatingByEmployee);
 router.delete("/delreview", authMiddleware, reviewController.delReview);
 

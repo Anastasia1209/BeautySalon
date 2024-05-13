@@ -20,61 +20,25 @@ function ReviewPage() {
   const { id } = useParams();
   const employeeID = parseInt(id, 10);
   const navigate = useNavigate();
-
-  //   const userID = 1; // Замените на реальный userID
-  //   const employeeID = 2; // Замените на реальный employeeID
-
-  //   const handleReviewAdded = (reviewData) => {
-  //     // Обработка данных о добавленном отзыве
-  //     console.log("Review added:", reviewData);
-  //   };
-
-  // useEffect(() => {
-  //   axios
-  //     .get(`/rev/getrewempl/${employeeID}`,{
-  //       headers: {
-  //         Authorization: `Bearer ${localStorage.getItem('authToken')}`, // Замените 'authToken' на реальный ключ токена, если он отличается
-  //     }
-  //     })
-
-  //     .then((response) => {
-  //       setReviews(response.data);
-  //     })
-  //     .catch((error) => {
-  //       console.error("Ошибка загрузки данных об услугах:", error);
-  //     });
-  // }, [employeeID]);
+  const isAuthenticated = !!localStorage.getItem("authToken");
 
   // Функция загрузки отзывов о сотруднике
   const loadReviews = async () => {
     try {
-      // Получение токена из localStorage
-      const authToken = localStorage.getItem("authToken");
-
-      // Запрос на получение отзывов о сотруднике
-      const response = await axios.get(`/rev/getrewempl/${employeeID}`, {
-        headers: {
-          Authorization: `Bearer ${authToken}`, // Добавьте токен в заголовок
-        },
-      });
+      const response = await axios.get(`/rev/getrewempl/${employeeID}`);
 
       setReviews(response.data);
     } catch (error) {
-      // Если произошла ошибка, отобразите сообщение в консоли
       console.error("Ошибка при загрузке отзывов:", error);
 
-      // Обработка ошибок
       if (error.response && error.response.status === 403) {
-        // Если статус 403 (Forbidden), перенаправьте на страницу входа
-        navigate("/login");
+        //  navigate("/login");
       } else {
-        // Показать более подробное сообщение об ошибке
         console.error("Подробное сообщение об ошибке:", error.response?.data);
       }
     }
   };
 
-  // Загрузка отзывов при монтировании компонента
   useEffect(() => {
     loadReviews();
   }, [employeeID]);
@@ -82,7 +46,7 @@ function ReviewPage() {
   return (
     <div>
       <NavMenu />
-      <AddReview employeeID={employeeID} />
+      {isAuthenticated && <AddReview employeeID={employeeID} />}
       <Typography variant="h4" className={classes.title}>
         Отзывы
       </Typography>{" "}

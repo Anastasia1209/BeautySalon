@@ -64,7 +64,11 @@ function BookingForm() {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await axios.get("/serv/getservices");
+        const response = await axios.get("/serv/getservices", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
         setAvailableServices(response.data || []);
       } catch (error) {
         console.error("Ошибка при загрузке списка услуг:", error);
@@ -96,7 +100,11 @@ function BookingForm() {
     const fetchAvailableDates = async () => {
       try {
         if (selectedService) {
-          const response = await axios.get(`/book/getdate/${selectedService}`);
+          const response = await axios.get(`/book/getdate/${selectedService}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          });
           // Предполагаем, что response.data.dates содержит массив доступных дат
           setAvailableDates(response.data.dates || []);
           console.log(response.data.dates);
@@ -127,28 +135,7 @@ function BookingForm() {
     //return !availableISOdates.includes(formattedDate);
   };
   //////////////////////////////////////
-  // // Загрузка доступных временных слотов на выбранную дату
-  // useEffect(() => {
-  //   const fetchTimeSlots = async () => {
-  //     try {
-  //       if (selectedDate) {
-  //         // Преобразуем выбранную дату в формат ISO для отправки на сервер
-  //         const formattedDate = selectedDate.toISOString().split("T")[0];
-  //         console.log(formattedDate);
-  //         // Выполняем запрос к API
-  //         const response = await axios.get(`/book/getslots/${formattedDate}`);
-  //         console.log(response);
-  //         // Устанавливаем доступные временные слоты
-  //         setAvailableTimes(response.data.timeSlots || []);
-  //       }
-  //     } catch (error) {
-  //       console.error("Ошибка при загрузке временных слотов:", error);
-  //     }
-  //   };
 
-  //   // Запускаем функцию при изменении выбранной даты
-  //   fetchTimeSlots();
-  // }, [selectedDate]);
   /////////////вариант с карточками
   useEffect(() => {
     const fetchTimeSlots = async () => {
@@ -163,10 +150,13 @@ function BookingForm() {
           console.log("qqqqqqqqqqqqqqq " + formattedDate);
 
           const timeDate = new Date(selectedDate).getTime();
-          const response = await axios.get(`/book/getslots/${timeDate}`);
+          const response = await axios.get(`/book/getslots/${timeDate}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          });
           const timeSlots = response.data.timeSlots || [];
 
-          console.log("pzda");
           console.log(response.data);
 
           // Разделяем временные слоты по мастерам
@@ -198,12 +188,23 @@ function BookingForm() {
 
           // Запрос к новому маршруту API для загрузки мастеров
           const response = await axios.get(
-            `/book/getemployees/${selectedService}/${formattedDate}`
+            `/book/getemployees/${selectedService}/${formattedDate}`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              },
+            }
           );
           console.log("Мастера:", response.data);
 
+          const availableEmployeeForDate = response.data.employees.filter(
+            (employee) => availableTimes[employee.employeeID]?.length > 0
+          );
+
+          setAvailableEmployee(availableEmployeeForDate || []);
+
           // Установка загруженных мастеров
-          setAvailableEmployee(response.data.employees || []);
+          // setAvailableEmployee(response.data.employees || []);
         }
       } catch (error) {
         console.error("Ошибка при загрузке мастеров для даты:", error);
@@ -211,7 +212,7 @@ function BookingForm() {
     };
 
     fetchEmployeesForDate();
-  }, [selectedDate, selectedService]);
+  }, [selectedDate, selectedService, availableTimes]);
 
   const handleTimeSlotClick = (startTime, employeeID) => {
     // Устанавливаем выбранное время и идентификатор мастера
@@ -234,7 +235,11 @@ function BookingForm() {
     };
 
     try {
-      const response = await axios.post("/book/booking", data);
+      const response = await axios.post("/book/booking", data, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
       console.log("Регистрация успешно добавлена:", response.data);
       navigate("/user");
       // Выполните действия после успешного добавления регистрации

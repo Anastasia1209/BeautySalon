@@ -5,6 +5,8 @@ import { jwtDecode } from "jwt-decode";
 const AddReview = ({ employeeID, onReviewAdded }) => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
+  const [error, setError] = useState("");
+
   const [userID, setUserID] = useState(null);
 
   // Получение `userID` из токена JWT
@@ -98,7 +100,8 @@ const AddReview = ({ employeeID, onReviewAdded }) => {
       }
     } catch (error) {
       console.error("Error adding review:", error);
-      console.log("Error adding review");
+      setError(error.response.data.message || "Ошибка добавления отзыва");
+      // console.log("Error adding review");
     }
   };
 
@@ -130,6 +133,8 @@ const AddReview = ({ employeeID, onReviewAdded }) => {
           rows={4}
         />
       </Box>
+      {error && <Typography color="error">{error}</Typography>}
+
       <Button type="submit" variant="contained" color="primary">
         Отправить
       </Button>

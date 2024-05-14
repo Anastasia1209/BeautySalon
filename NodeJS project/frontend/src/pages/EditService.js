@@ -4,6 +4,8 @@ import ServiceForm from "../components/ServiceForm"; // Импорт компо�
 import axios from "axios";
 import { Button, Typography } from "@material-ui/core";
 import NavMenu from "../components/NavMenu";
+import { jwtDecode } from "jwt-decode";
+import UserRoleCheck from "../components/AppRouter";
 
 function EditService() {
   const { id } = useParams(); // Получаем id из URL
@@ -11,18 +13,16 @@ function EditService() {
   const [service, setService] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState(""); // Состояние для ошибок
+  const [userRole, setUserRole] = useState();
 
-  //   const handleSubmit = async (serviceData, mode) => {
-  //     // Обработка отправки данных формы (изменение услуги)
-  //     // Например, отправляем PUT-запрос на сервер для изменения существующей услуги
-  //     const response = await axios.put(`/serv/updateservice/${id}`, serviceData, {
-  //       headers: {
-  //         Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-  //       },
-  //     });
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      setUserRole(decodedToken.role);
+    }
+  }, []);
 
-  //     console.log("Услуга успешно изменена:", response.data.newService);
-  //   };
   // Загрузка данных услуги по идентификатору
   useEffect(() => {
     const fetchService = async () => {
@@ -92,6 +92,8 @@ function EditService() {
 
   return (
     <div>
+      <UserRoleCheck userRole={userRole} />
+
       <NavMenu />
       <Typography variant="h4" gutterBottom>
         Редактирование услуги

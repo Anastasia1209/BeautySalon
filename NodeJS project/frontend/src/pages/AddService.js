@@ -1,13 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ServiceForm from "../components/ServiceForm"; // Импорт компонента ServiceForm
 import axios from "axios";
 import { Typography } from "@material-ui/core";
 import NavMenu from "../components/NavMenu";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+import UserRoleCheck from "../components/AppRouter";
 
 function AddServiceForm() {
   const [error, setError] = useState(""); // Состояние для ошибок
   const navigate = useNavigate();
+  // const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState();
+
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      setUserRole(decodedToken.role);
+    }
+  }, []);
 
   const handleSubmit = async (serviceData, mode) => {
     try {
@@ -28,6 +40,7 @@ function AddServiceForm() {
 
   return (
     <div>
+      <UserRoleCheck userRole={userRole} />
       <NavMenu />
       <ServiceForm
         initialName=""

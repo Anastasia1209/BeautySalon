@@ -4,6 +4,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import EmployeeForm from "../components/EmployeeForm";
 import { Typography, Button } from "@material-ui/core";
 import NavMenu from "../components/NavMenu";
+import { jwtDecode } from "jwt-decode";
+import UserRoleCheck from "../components/AppRouter";
 
 function EditEmployeePage() {
   const { id } = useParams();
@@ -11,6 +13,15 @@ function EditEmployeePage() {
   const [initialData, setInitialData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState(""); // Состояние для ошибок
+  const [userRole, setUserRole] = useState();
+
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      setUserRole(decodedToken.role);
+    }
+  }, []);
 
   useEffect(() => {
     // Загрузка данных о сотруднике для редактирования
@@ -81,6 +92,8 @@ function EditEmployeePage() {
 
   return (
     <div>
+      <UserRoleCheck userRole={userRole} />
+
       <NavMenu />
       <Typography variant="h4" gutterBottom>
         Редактирование сотрудника

@@ -61,7 +61,7 @@ function ServiceForm({
       setError("");
     } catch (error) {
       console.error("Ошибка при обработке формы:", error);
-      setError(error.response?.data?.error || "Ошибка при обработке формы");
+      setError(error.response.data.message || "Ошибка при обработке формы");
     }
   };
 

@@ -9,6 +9,10 @@ class reviewController {
       // Извлечение данных отзыва из тела запроса
       const { userID, employeeID, rating, comm } = req.body;
 
+      if (!rating) {
+        console.log("Оценка должна быть указана");
+        return res.status(400).json({ message: "Оценка должна быть указана" });
+      }
       // Проверка существования сотрудника
       const employee = await clientPr.employees.findFirst({
         where: {

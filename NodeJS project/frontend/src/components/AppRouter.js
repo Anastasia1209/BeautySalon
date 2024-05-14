@@ -1,12 +1,19 @@
-import React from "react";
-import { Route, Navigate } from "react-router-dom";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
-const AppRouter = ({ isAuthenticated, ...props }) => {
-  if (isAuthenticated) {
-    return <Route {...props} />;
-  } else {
-    return <Navigate to="/login" />;
-  }
+const AppRouter = ({ userRole }) => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+
+    if (!token || (userRole && userRole !== "ADMIN")) {
+      console.log("Redirecting to 404 page...");
+      navigate("/404");
+    }
+  }, [userRole, navigate]);
+
+  return null;
 };
 
 export default AppRouter;

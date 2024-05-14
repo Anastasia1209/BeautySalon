@@ -57,9 +57,9 @@ function SignIn() {
       navigate("/main");
     } catch (error) {
       if (error.response && error.response.data) {
-        setError(error.response.data.message); // Сохраняем сообщение об ошибке
-      } else {
-        setError("Неизвестная ошибка при входе.");
+        setError(
+          error.response.data.message || "Неизвестная ошибка при входе."
+        ); // Сохраняем сообщение об ошибке
       }
       console.error("Error logging in user:", error);
     }

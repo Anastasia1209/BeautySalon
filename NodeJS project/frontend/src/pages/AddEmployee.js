@@ -1,14 +1,24 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import EmployeeForm from "../components/EmployeeForm";
 import { Typography } from "@material-ui/core";
 import NavMenu from "../components/NavMenu";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { jwtDecode } from "jwt-decode";
+import UserRoleCheck from "../components/AppRouter";
 
 function AddEmployee() {
   const navigate = useNavigate();
   const [error, setError] = useState("");
+  const [userRole, setUserRole] = useState();
+
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      setUserRole(decodedToken.role);
+    }
+  }, []);
 
   // Функция для обработки отправки формы
   const handleAddEmployee = async (employeeData) => {
@@ -32,6 +42,8 @@ function AddEmployee() {
 
   return (
     <div>
+      <UserRoleCheck userRole={userRole} />
+
       <NavMenu />
       <Typography variant="h4" gutterBottom>
         Добавление сотрудника

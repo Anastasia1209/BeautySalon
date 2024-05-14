@@ -6,7 +6,7 @@ import ServicesPage from "../src/pages/ServicePage";
 import { Container } from "@material-ui/core";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import MainPage from "./pages/MainPage";
-import AdminPage from "./pages/AdminPage";
+//import AdminPage from "./pages/AdminPage";
 import UserPage from "./pages/UserPage";
 import EmployeePage from "./pages/EmployeePage";
 import EditService from "./pages/EditService";

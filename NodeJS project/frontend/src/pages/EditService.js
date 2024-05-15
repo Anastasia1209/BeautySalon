@@ -8,11 +8,11 @@ import { jwtDecode } from "jwt-decode";
 import UserRoleCheck from "../components/AppRouter";
 
 function EditService() {
-  const { id } = useParams(); // Получаем id из URL
+  const { id } = useParams(); // id из URL
   const navigate = useNavigate();
   const [service, setService] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState(""); // Состояние для ошибок
+  const [errorMessage, setErrorMessage] = useState("");
   const [userRole, setUserRole] = useState();
 
   useEffect(() => {
@@ -23,7 +23,6 @@ function EditService() {
     }
   }, []);
 
-  // Загрузка данных услуги по идентификатору
   useEffect(() => {
     const fetchService = async () => {
       try {
@@ -44,7 +43,6 @@ function EditService() {
   //изменение услуги
   const handleSubmit = async (serviceData, mode) => {
     try {
-      // Отправляем PUT-запрос на сервер для изменения услуги
       const response = await axios.put(`/serv/updserv/${id}`, serviceData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
@@ -64,7 +62,6 @@ function EditService() {
   //удаление услуги
   const handleDelete = async () => {
     try {
-      // Отправляем DELETE-запрос на сервер для удаления услуги
       await axios.delete(`/serv/delserv/${id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
@@ -72,8 +69,7 @@ function EditService() {
       });
 
       console.log(`Услуга с id ${id} успешно удалена.`);
-      // Перенаправляем пользователя после успешного удаления услуги
-      navigate("/services"); // Укажите нужный маршрут для перенаправления
+      navigate("/services");
     } catch (error) {
       console.error("Ошибка при удалении услуги:", error);
       setErrorMessage(

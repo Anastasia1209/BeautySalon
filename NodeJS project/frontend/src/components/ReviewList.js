@@ -30,7 +30,6 @@ function ReviewsList({ reviews }) {
                 alignItems="center"
               >
                 <Grid item xs={12}>
-                  {/* Используйте компонент `Rating` вместо текстового поля "Оценка" */}
                   <Box
                     display="flex"
                     alignItems="center"

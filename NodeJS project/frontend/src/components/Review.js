@@ -9,13 +9,12 @@ const AddReview = ({ employeeID, onReviewAdded }) => {
 
   const [userID, setUserID] = useState(null);
 
-  // Получение `userID` из токена JWT
   const getUserIDFromToken = () => {
     const token = localStorage.getItem("authToken");
     if (token) {
       try {
-        const decodedToken = jwtDecode(token); // Декодируем токен
-        return decodedToken.userID; // Возвращаем `userID` из декодированного токена
+        const decodedToken = jwtDecode(token);
+        return decodedToken.userID;
       } catch (error) {
         console.error("Error decoding token:", error);
         return null;
@@ -26,7 +25,6 @@ const AddReview = ({ employeeID, onReviewAdded }) => {
     }
   };
 
-  // Установить `userID` после монтирования компонента
   useEffect(() => {
     const userID = getUserIDFromToken();
     setUserID(userID);
@@ -68,7 +66,6 @@ const AddReview = ({ employeeID, onReviewAdded }) => {
       return;
     }
 
-    // Объект данных для отзыва
     const reviewData = {
       userID,
       employeeID,
@@ -79,7 +76,6 @@ const AddReview = ({ employeeID, onReviewAdded }) => {
     console.log("reviewData:", reviewData);
 
     try {
-      // Отправка POST-запроса для добавления отзыва
       const response = await axios.post("/rev/addreview", reviewData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
@@ -87,9 +83,7 @@ const AddReview = ({ employeeID, onReviewAdded }) => {
       });
 
       if (response.status === 201) {
-        // Уведомляем родительский компонент о добавлении отзыва
         onReviewAdded && onReviewAdded(response.data);
-        // Очистить форму после успешного добавления отзыва
         setRating(0);
         setComment("");
         window.location.reload();
@@ -101,7 +95,6 @@ const AddReview = ({ employeeID, onReviewAdded }) => {
     } catch (error) {
       console.error("Error adding review:", error);
       setError(error.response.data.message || "Ошибка добавления отзыва");
-      // console.log("Error adding review");
     }
   };
 

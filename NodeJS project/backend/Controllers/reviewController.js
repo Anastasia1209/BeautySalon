@@ -6,14 +6,12 @@ class reviewController {
   //добавление отзыва
   async addReview(req, res) {
     try {
-      // Извлечение данных отзыва из тела запроса
       const { userID, employeeID, rating, comm } = req.body;
 
       if (!rating) {
         console.log("Оценка должна быть указана");
         return res.status(400).json({ message: "Оценка должна быть указана" });
       }
-      // Проверка существования сотрудника
       const employee = await clientPr.employees.findFirst({
         where: {
           employeeID: employeeID,
@@ -21,10 +19,9 @@ class reviewController {
       });
 
       if (!employee) {
-        return res.status(404).json({ message: "Employee not found" });
+        return res.status(404).json({ message: "Сотрудник не найден" });
       }
 
-      // Создание отзыва
       const newReview = await clientPr.reviews.create({
         data: {
           userID,
@@ -34,14 +31,13 @@ class reviewController {
         },
       });
 
-      // Возврат данных о созданном отзыве
       res.status(201).json({
-        message: "Review added successfully",
+        message: "Отзыв успешно добавлен",
         review: newReview,
       });
     } catch (error) {
-      console.error("Error adding review:", error);
-      res.status(500).json({ message: "Error adding review" });
+      console.error("Ошибка добавления отзыва:", error);
+      res.status(500).json({ message: "Ошибка добавления отзыва" });
     }
   }
   //получение отзывов по сотруднику
@@ -56,7 +52,7 @@ class reviewController {
       });
 
       if (!employee) {
-        return res.status(404).json({ message: "Employee not found" });
+        return res.status(404).json({ message: "Сотрудник не найден" });
       }
 
       const reviews = await clientPr.reviews.findMany({
@@ -64,47 +60,43 @@ class reviewController {
           employeeID: employeeID,
         },
         include: {
-          user: true, // Включаем отношение с моделью `Users` для получения пользователя
+          user: true,
         },
       });
 
       res.status(200).json(reviews);
     } catch (error) {
-      console.error("Error getting reviews for employee:", error);
-      res.status(500).json({ message: "Error getting reviews for employee" });
+      console.error("Ошибка получения отзывов о сотруднике: ", error);
+      res
+        .status(500)
+        .json({ message: "Ошибка получения отзывов о сотруднике" });
     }
   }
 
   async getAverageRatingByEmployee(req, res) {
     try {
-      // Получение `employeeID` из параметра маршрута
       const employeeID = parseInt(req.params.id, 10);
 
-      // Проверка на действительность `employeeID`
       if (isNaN(employeeID)) {
-        return res.status(400).json({ message: "Invalid employee ID" });
+        return res.status(400).json({ message: "Недопустимый ID сотрудника" });
       }
 
-      // Вычисление среднего рейтинга для отзывов сотрудника
       const averageRating = await clientPr.reviews.aggregate({
         where: {
-          employeeID: employeeID, // Условие фильтрации по `employeeID`
+          employeeID: employeeID,
         },
         _avg: {
-          rating: true, // Вычисляем среднее значение поля `rating`
+          rating: true,
         },
       });
       const roundedAverageRating = averageRating._avg.rating
         ? averageRating._avg.rating.toFixed(2)
         : 0.0;
 
-      // Возврат среднего рейтинга клиенту
       res.status(200).json({ averageRating: roundedAverageRating });
     } catch (error) {
-      console.error("Error getting average rating for employee:", error);
-      res
-        .status(500)
-        .json({ message: "Error getting average rating for employee" });
+      console.error("Ошибка получения рейтинга сотрудника: ", error);
+      res.status(500).json({ message: "Ошибка получения рейтинга сотрудника" });
     }
   }
 

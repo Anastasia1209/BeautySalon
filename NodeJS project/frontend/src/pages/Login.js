@@ -45,13 +45,12 @@ function SignIn() {
     };
 
     try {
-      // Отправка POST-запроса на сервер для входа пользователя
       const response = await axios.post("/auth/login", userData);
       const token = response.data.token;
 
       console.log("User logged in successfully:", token);
 
-      // Сохраняем токен в локальное хранилище
+      //  токен в локальное хранилище
       localStorage.setItem("authToken", token);
 
       navigate("/main");
@@ -59,7 +58,7 @@ function SignIn() {
       if (error.response && error.response.data) {
         setError(
           error.response.data.message || "Неизвестная ошибка при входе."
-        ); // Сохраняем сообщение об ошибке
+        );
       }
       console.error("Error logging in user:", error);
     }
@@ -101,7 +100,6 @@ function SignIn() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          {/* Отображение ошибки */}
           {error && (
             <Typography color="error" variant="body2">
               {error}

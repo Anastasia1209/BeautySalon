@@ -8,12 +8,10 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { Grid, TextField } from "@mui/material";
 
 function DateTimePicker({ index, onUpdateSchedule }) {
-  // Состояния для хранения выбранной даты и времени
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedStartTime, setSelectedStartTime] = useState(null);
   const [selectedEndTime, setSelectedEndTime] = useState(null);
 
-  // Обновление расписания при выборе даты и времени
   const handleDateChange = (newDate) => {
     setSelectedDate(newDate);
     onUpdateSchedule(index, "date", newDate);

@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.secondary.main,
   },
   form: {
-    width: "100%", // Fix IE 11 issue.
+    width: "100%",
     marginTop: theme.spacing(3),
   },
   submit: {
@@ -37,18 +37,15 @@ function SignUp() {
   const classes = useStyles();
   const navigate = useNavigate();
 
-  // Состояния формы для хранения значений из полей ввода
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  // Обработчик отправки формы
   const handleSubmit = async (e) => {
     e.preventDefault(); // Предотвратить перезагрузку страницы
 
-    // Создание объекта с данными пользователя
     const userData = {
       name: name,
       phone: phone,
@@ -57,17 +54,16 @@ function SignUp() {
     };
 
     try {
-      // Отправка POST-запроса на сервер
       const response = await axios.post("/auth/registration", userData);
       console.log("User registered successfully:", response.data);
       navigate("/login");
     } catch (error) {
       if (error.response && error.response.data) {
-        setError(error.response.data.message); // Сохраняем сообщение об ошибке
-      } else {
-        setError("Неизвестная ошибка при регистрации.");
+        setError(
+          error.response.data.message || "Неизвестная ошибка при регистрации."
+        );
       }
-      console.error("Error registering user:", error);
+      console.error("Неизвестная ошибка при регистрации:", error);
     }
   };
 

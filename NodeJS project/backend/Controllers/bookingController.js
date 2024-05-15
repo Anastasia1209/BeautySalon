@@ -26,7 +26,9 @@ class bookingController {
 
       // Проверяем, что `serviceID` определен
       if (!serviceID) {
-        return res.status(400).json({ message: "Service ID is required" });
+        return res
+          .status(400)
+          .json({ message: "Требуется идентификатор услуги" });
       }
 
       // Поиск мастеров, которые предоставляют данную услугу
@@ -57,7 +59,7 @@ class bookingController {
       if (employeeIDs.length === 0) {
         return res
           .status(404)
-          .json({ message: "No employees found for the specified service" });
+          .json({ message: "Сотрудников для указанной услуги не найдено" });
       }
 
       //  const currentDate = new Date().toISOString().slice(0, 10);
@@ -83,14 +85,12 @@ class bookingController {
 
       // Возвращаем список уникальных дат
       res.status(200).json({
-        message: "Available dates retrieved successfully",
+        message: "Доступные даты успешно получены.",
         dates: uniqueDates,
       });
     } catch (error) {
-      console.error("Error retrieving available dates for service:", error);
-      res
-        .status(500)
-        .json({ message: "Error retrieving available dates for service" });
+      console.error("Ошибка при получении доступных дат:", error);
+      res.status(500).json({ message: "Ошибка при получении доступных дат" });
     }
   }
 
@@ -102,7 +102,7 @@ class bookingController {
       console.log(date);
       // Если дата не указана, возвращаем ошибку
       if (!date) {
-        return res.status(400).json({ message: "Date parameter is required" });
+        return res.status(400).json({ message: "Требуется параметр даты" });
       }
       //console.log(new Date(date));
       // const test = date.split(".");
@@ -137,13 +137,13 @@ class bookingController {
 
       // Возвращаем найденные временные слоты в ответ
       res.status(200).json({
-        message: "Time slots retrieved successfully",
+        message: "Time slots успешно получены",
         date: selectedDate.toISOString().split("T")[0],
         timeSlots: timeSlots,
       });
     } catch (error) {
-      console.error("Error retrieving time slots:", error);
-      res.status(500).json({ message: "Error retrieving time slots" });
+      console.error("Ошибка получения time slots:", error);
+      res.status(500).json({ message: "Ошибка получения time slots" });
     }
   }
 
@@ -156,7 +156,7 @@ class bookingController {
       if (!serviceID || !date) {
         return res
           .status(400)
-          .json({ message: "Service ID and date are required" });
+          .json({ message: "Требуется идентификатор услуги и дата." });
       }
 
       // Найти сотрудников, предоставляющих данную услугу
@@ -201,10 +201,13 @@ class bookingController {
       // Возвращаем сотрудников и их расписание
       res.status(200).json({ employees: employeesWithTime });
     } catch (error) {
-      console.error("Error retrieving employees and time for date:", error);
-      res
-        .status(500)
-        .json({ message: "Error retrieving employees and time for date" });
+      console.error(
+        "Ошибка при получении данных о сотрудниках и времени: ",
+        error
+      );
+      res.status(500).json({
+        message: "Ошибка при получении данных о сотрудниках и времени",
+      });
     }
   }
 
@@ -358,13 +361,34 @@ class bookingController {
         console.log("Регистрация не найдена");
         return res.status(404).json({ message: "Регистрация не найдена" });
       }
-      const selectedDate = new Date(
-        registration.dateTime.setHours(
-          registration.dateTime.getHours() -
-            registration.dateTime.getTimezoneOffset() / 60
-        )
+      console.log("regStart: ");
+      console.log(registration.dateTime);
+
+      // const selectedDate = new Date(
+      //   registration.dateTime.setHours(
+      //     registration.dateTime.getHours() -
+      //       registration.dateTime.getTimezoneOffset() / 60
+      //   )
+      // );
+
+      console.log("regSec: ");
+      console.log(registration.dateTime);
+
+      const dateCopy = registration.dateTime;
+
+      const startTime = registration.dateTime;
+      const setDate = new Date(
+        new Date(new Date(dateCopy).setHours(3)).setMinutes(0)
       );
-      console.log(new Date(selectedDate));
+      //const setStartTime = new Date();
+
+      console.log("setDate: ");
+      console.log(setDate);
+
+      console.log("startTime: ");
+      console.log(startTime);
+
+      console.log();
       // Восстанавливаем время в расписании мастера
       await clientPr.schedule.create({
         data: {
@@ -373,11 +397,11 @@ class bookingController {
           },
           //  employeeId: registration.employeeID,
           // date: registration.dateTime,
-          date: selectedDate,
+          date: setDate,
 
-          startTime: registration.dateTime,
+          startTime: new Date(registration.dateTime),
           // endTime: registration.dateTime,
-          endTime: dayjs(registration.dateTime).add(1, "hour").toDate(), // Увеличиваем на один час
+          endTime: new Date(startTime.setHours(startTime.getHours() + 1)), // Увеличиваем на один час
         },
       });
 

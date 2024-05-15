@@ -51,7 +51,6 @@ export default function MainPost(props) {
       const token = localStorage.getItem("authToken");
       if (token) {
         setIsAuthenticated(true);
-        // Расшифруйте токен, чтобы получить роль пользователя
         // const decodedToken = jwtDecode(token);
         // if (decodedToken && decodedToken.role) {
         //   setUserRole(decodedToken.role);
@@ -73,7 +72,6 @@ export default function MainPost(props) {
       className={classes.mainPost}
       style={{ backgroundImage: `url(${post.image})` }}
     >
-      {/* Increase the priority of the hero background image */}
       {
         <img
           style={{ display: "none" }}

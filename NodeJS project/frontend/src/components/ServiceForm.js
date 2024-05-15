@@ -20,13 +20,11 @@ function ServiceForm({
 }) {
   const classes = useStyles();
 
-  // Состояния для данных формы
   const [name, setName] = useState(initialName);
   const [description, setDescription] = useState(initialDescription);
   const [price, setPrice] = useState(initialPrice);
   const [error, setError] = useState("");
 
-  // Обновляем состояния при изменении `initialName`, `initialDescription`, `initialPrice`
   useEffect(() => {
     setName(initialName);
     setDescription(initialDescription);
@@ -35,13 +33,11 @@ function ServiceForm({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Валидация данных формы
     if (!name || price <= 0) {
       setError("Введите корректные данные.");
       return;
     }
 
-    // Формирование данных для отправки
     const serviceData = {
       name,
       description,
@@ -49,10 +45,8 @@ function ServiceForm({
     };
 
     try {
-      // Передаем данные формы в обработчик
       await onSubmit(serviceData, mode);
 
-      // Сброс формы после успешного добавления/изменения, если это режим добавления
       if (mode === "add") {
         setName("");
         setDescription("");

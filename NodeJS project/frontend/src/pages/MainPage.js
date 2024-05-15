@@ -45,6 +45,7 @@ function MainPage() {
   const sectionsAdmin = [
     { title: "Услуги", url: "/services" },
     { title: "Сотрудники", url: "/employees" },
+    { title: "Добавить совет", url: "/addtips" },
     //  { title: "Админ", url: "/admin" },
   ];
 

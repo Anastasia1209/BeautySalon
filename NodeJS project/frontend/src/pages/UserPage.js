@@ -29,7 +29,6 @@ function UserPage() {
         },
       });
 
-      // Устанавливаем данные о пользователе
       setUser(response.data);
       setFormData({
         name: response.data.name,
@@ -93,7 +92,6 @@ function UserPage() {
     try {
       //  const token = localStorage.getItem("authToken");
 
-      // Отправка данных для обновления пользователя
       const response = await axios.put(
         `/auth/upduser/${user.userID}`,
         formData,
@@ -105,7 +103,6 @@ function UserPage() {
       );
 
       console.log("User updated successfully:", response.data);
-      // После успешного обновления можно перезагрузить данные о пользователе
       fetchCurrentUser();
     } catch (error) {
       console.error("Error updating user:", error);
@@ -118,7 +115,6 @@ function UserPage() {
   const onCancel = async (registrationID) => {
     try {
       console.log(registrationID);
-      // Отправляем запрос на отмену регистрации
       await axios.delete(`/book/delbook/${registrationID}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
@@ -127,7 +123,6 @@ function UserPage() {
       console.log("Запись успешно отменена");
       window.location.reload();
 
-      // Обновляем список регистраций после отмены
       fetchUserRegistrations();
     } catch (error) {
       console.error("Ошибка при отмене регистрации:", error);
@@ -135,11 +130,8 @@ function UserPage() {
   };
 
   const handleLogout = () => {
-    // Удаляем токен из localStorage
     localStorage.removeItem("authToken");
-    // Очищаем состояние пользователя
     setUser(null);
-    // Перенаправляем пользователя на страницу входа
     navigate("/main");
   };
 
@@ -205,7 +197,6 @@ function UserPage() {
           Сохранить
         </Button>
         {error && <Typography color="error">{error}</Typography>}
-        {/* Добавляем кнопку "Выйти" */}
         <Button
           onClick={handleLogout}
           fullWidth

@@ -8,9 +8,8 @@ import { jwtDecode } from "jwt-decode";
 import UserRoleCheck from "../components/AppRouter";
 
 function AddServiceForm() {
-  const [error, setError] = useState(""); // Состояние для ошибок
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-  // const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState();
 
   useEffect(() => {
@@ -34,7 +33,7 @@ function AddServiceForm() {
       setError("");
     } catch (error) {
       console.error("Ошибка при добавлении услуги:", error);
-      setError(error.response?.data?.error || "Ошибка при добавлении услуги.");
+      setError(error.response.data.message || "Ошибка при добавлении услуги.");
     }
   };
 

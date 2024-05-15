@@ -95,6 +95,10 @@ model Schedule {
   employee Employees @relation(fields: [employeeID], references: [employeeID], onDelete: Cascade)
 }
 
+model Tips {
+  id  Int    @id @default(autoincrement())
+  tip String? 
+}
 
 
 

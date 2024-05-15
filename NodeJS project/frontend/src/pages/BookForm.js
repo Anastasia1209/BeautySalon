@@ -46,7 +46,7 @@ function BookingForm() {
     if (token) {
       try {
         const decodedToken = jwtDecode(token);
-        return decodedToken.userID; // Возвращаем `userID` из декодированного токена
+        return decodedToken.userID; //`userID` из декодированного токена
       } catch (error) {
         console.error("Error decoding token:", error);
         return null;
@@ -96,7 +96,7 @@ function BookingForm() {
   }, [selectedService]);
 
   useEffect(() => {
-    // Загружаем доступные даты из базы данных
+    // доступные даты из базы данных
     const fetchAvailableDates = async () => {
       try {
         if (selectedService) {
@@ -105,7 +105,6 @@ function BookingForm() {
               Authorization: `Bearer ${localStorage.getItem("authToken")}`,
             },
           });
-          // Предполагаем, что response.data.dates содержит массив доступных дат
           setAvailableDates(response.data.dates || []);
           console.log(response.data.dates);
         }

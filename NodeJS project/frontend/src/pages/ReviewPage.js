@@ -22,7 +22,6 @@ function ReviewPage() {
   const navigate = useNavigate();
   const isAuthenticated = !!localStorage.getItem("authToken");
 
-  // Функция загрузки отзывов о сотруднике
   const loadReviews = async () => {
     try {
       const response = await axios.get(`/rev/getrewempl/${employeeID}`);

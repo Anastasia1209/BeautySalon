@@ -7,6 +7,8 @@ const authMiddleware = require("../Middlewares/authMiddleware.js");
 const roleMiddleware = require("../Middlewares/roleMiddleware.js");
 const bookingController = require("../Controllers/bookingController.js");
 
+const { getAllRegistrations } = require("../ws.js");
+
 const router = express.Router();
 
 router.get(
@@ -33,5 +35,8 @@ router.delete(
   authMiddleware,
   bookingController.cancelRegistration
 );
+
+//тест
+router.get("/getallreg", getAllRegistrations);
 
 module.exports = router;

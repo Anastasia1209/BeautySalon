@@ -11,7 +11,10 @@ const servRoute = require("./Routes/serviceRoute");
 const revRoute = require("./Routes/reviewRoute");
 const emplRoute = require("./Routes/employeeRoute");
 const bookingRoute = require("./Routes/bookingRoute");
+const tipsRoute = require("./Routes/tipsRoute");
 const app = express();
+const cron = require("node-cron");
+const handleMail = require("./ws");
 
 app.use(cors());
 app.use(cookieParser());
@@ -21,6 +24,7 @@ app.use("/serv", servRoute);
 app.use("/rev", revRoute);
 app.use("/empl", emplRoute);
 app.use("/book", bookingRoute);
+app.use("/tips", tipsRoute);
 
 app.use(
   session({
@@ -75,6 +79,22 @@ passport.deserializeUser(async (id, done) => {
 
 app.get("/", (req, res) => {
   res.send("Добро пожаловать в салон красоты");
+});
+
+cron.schedule("0 1 * * * ", async () => {
+  const regs = await handleMail.getAllRegistrations();
+  regs.forEach(async (data) => {
+    if (new Date(data.date).getDate() - new Date().getDate() === 1) {
+      await handleMail.sendMail(data.user.email, {
+        name: data.user.name,
+        day: data.date,
+        time: data.time,
+        service: data.service,
+        employee: data.employee,
+      });
+    }
+    console.log(new Date(data.date).getDate() - new Date().getDate());
+  });
 });
 
 app.listen(5000, () =>

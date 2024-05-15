@@ -41,8 +41,8 @@ class employeeController {
 
       res.status(200).json(employeeWithId);
     } catch (error) {
-      console.error("Error getting employees:", error);
-      res.status(500).json({ message: "Error getting employees" });
+      console.error("Ошибка получения сотрудников:", error);
+      res.status(500).json({ message: "Ошибка получения сотрудников" });
     }
   }
 
@@ -57,7 +57,9 @@ class employeeController {
       console.log(parsedServiceID);
 
       if (!serviceID) {
-        return res.status(400).json({ message: "Service ID is required" });
+        return res
+          .status(400)
+          .json({ message: "Требуется идентификатор услуги." });
       }
 
       // Поиск сотрудников, предоставляющих данную услугу
@@ -80,19 +82,19 @@ class employeeController {
       if (employees.length === 0) {
         return res
           .status(404)
-          .json({ message: "No employees found for the specified service" });
+          .json({ message: "Сотрудников для указанной услуги не найдено" });
       }
 
       // Возвращаем список сотрудников (имя и фамилию) в ответ
       res.status(200).json({
-        message: "Employees retrieved successfully",
+        message: "Сотрудники получены успешно",
         employees: employees,
       });
     } catch (error) {
-      console.error("Error retrieving employees by service:", error);
+      console.error("Ошибка получения сотрудников по сервису: ", error);
       res
         .status(500)
-        .json({ message: "Error retrieving employees by service" });
+        .json({ message: "Ошибка получения сотрудников по сервису" });
     }
   }
 
@@ -131,10 +133,10 @@ class employeeController {
       });
 
       if (existingEmployee) {
-        console.log("Employee with this email already exists");
+        console.log("Сотрудник с таким email уже существует");
         return res
           .status(409)
-          .json({ message: "Employee with this email already exists" });
+          .json({ message: "Сотрудник с таким email уже существует" });
       }
 
       // Создание нового сотрудника и добавление его услуг
@@ -155,15 +157,15 @@ class employeeController {
         const { date, startTime, endTime } = schedule;
 
         if (new Date(date) < new Date()) {
-          console.log("Invalid date");
-          return res.status(409).json({ message: "Invalid date" });
+          console.log("Недопустимая дата");
+          return res.status(409).json({ message: "Недействительная дата" });
         }
 
         if (new Date(startTime) > new Date(endTime)) {
-          console.log("Invalid start and end time");
+          console.log("Недопустимое время начала и окончания ");
           return res
             .status(409)
-            .json({ message: "Invalid start and end time" });
+            .json({ message: "Недопустимое время начала и окончания" });
         }
 
         // Добавление расписания для нового сотрудника
@@ -225,12 +227,12 @@ class employeeController {
 
       // Возврат данных о созданном сотруднике
       res.status(201).json({
-        message: "Employee added successfully",
+        message: "Сотрудник успешно добавлен",
         employee: newEmployee,
       });
     } catch (error) {
-      console.error("Error adding employee:", error);
-      res.status(500).json({ message: "Error adding employee" });
+      console.error("Ошибка добавления сотрудника: ", error);
+      res.status(500).json({ message: "Ошибка добавления сотрудника" });
     }
   }
 
@@ -254,7 +256,7 @@ class employeeController {
         !services &&
         !schedules
       ) {
-        return res.status(400).json({ message: "No data provided for update" });
+        return res.status(400).json({ message: "НЕт данных для удаления" });
       }
 
       // Обновление информации о сотруднике
@@ -270,113 +272,280 @@ class employeeController {
         data: updateData,
       });
 
-      // Обновление услуг сотрудника
       if (services) {
-        // Извлечение существующих связей с услугами сотрудника
+        // Удаление существующих связей с услугами сотрудника
+        // await clientPr.employeesServices.deleteMany({
+        //   where: { employeeID },
+        // });
+
+        // Добавление новых связей с услугами
+        const servicesToAdd = services.map((serviceID) => ({
+          employeeID,
+          serviceID: parseInt(serviceID, 10),
+        }));
+        console.log(servicesToAdd);
+
         const existingServices = await clientPr.employeesServices.findMany({
-          where: { employeeID },
-          select: {
-            serviceID: true,
+          where: {
+            employeeID,
+            serviceID: {
+              in: servicesToAdd.map((service) => service.serviceID),
+            },
           },
         });
 
-        // Создание множества существующих и переданных услуг
         const existingServiceIDs = new Set(
           existingServices.map((service) => service.serviceID)
         );
-        const newServiceIDs = new Set(services);
 
-        // Удаление услуг, которых больше нет в переданных данных
-        const servicesToRemove = Array.from(existingServiceIDs).filter(
-          (serviceID) => !newServiceIDs.has(serviceID)
+        const uniqueServicesToAdd = servicesToAdd.filter(
+          (service) => !existingServiceIDs.has(service.serviceID)
         );
-        if (servicesToRemove.length > 0) {
-          await clientPr.employeesServices.deleteMany({
-            where: {
-              employeeID,
-              serviceID: { in: servicesToRemove },
-            },
-          });
-        }
 
-        // Добавление новых услуг, которых нет в существующих
-        const servicesToAdd = Array.from(newServiceIDs).filter(
-          (serviceID) => !existingServiceIDs.has(serviceID)
-        );
-        if (servicesToAdd.length > 0) {
-          await clientPr.employeesServices.createMany({
-            data: servicesToAdd.map((serviceID) => ({
-              employeeID,
-              serviceID,
-            })),
-          });
+        if (uniqueServicesToAdd.length > 0) {
+          try {
+            await clientPr.employeesServices.createMany({
+              data: uniqueServicesToAdd,
+            });
+          } catch (error) {
+            console.error("Ошибка при добавлении новых услуг:", error);
+            return res
+              .status(500)
+              .json({ message: "Ошибка при добавлении новых услуг" });
+          }
         }
       }
+      // Обновление услуг сотрудника
+      // if (services) {
+      //   // Извлечение существующих связей с услугами сотрудника
+      //   const existingServices = await clientPr.employeesServices.findMany({
+      //     where: { employeeID },
+      //     select: {
+      //       serviceID: true,
+      //     },
+      //   });
+
+      //   // Создание множества существующих и переданных услуг
+      //   const existingServiceIDs = new Set(
+      //     existingServices.map((service) => service.serviceID)
+      //   );
+      //   const newServiceIDs = new Set(services);
+
+      //   // Удаление услуг, которых больше нет в переданных данных
+      //   const servicesToRemove = Array.from(existingServiceIDs).filter(
+      //     (serviceID) => !newServiceIDs.has(serviceID)
+      //   );
+      //   if (servicesToRemove.length > 0) {
+      //     await clientPr.employeesServices.deleteMany({
+      //       where: {
+      //         employeeID,
+      //         serviceID: { in: servicesToRemove },
+      //       },
+      //     });
+      //   }
+
+      //   // Добавление новых услуг, которых нет в существующих
+      //   const servicesToAdd = Array.from(newServiceIDs).filter(
+      //     (serviceID) => !existingServiceIDs.has(serviceID)
+      //   );
+      //   if (servicesToAdd.length > 0) {
+      //     await clientPr.employeesServices.createMany({
+      //       data: servicesToAdd.map((serviceID) => ({
+      //         employeeID,
+      //         serviceID,
+      //       })),
+      //     });
+      //   }
+      // }
 
       // Обновление расписания сотрудника
+      //     if (schedules) {
+      //       // Проверка существующего расписания
+      //       const existingSchedule = await clientPr.schedule.findMany({
+      //         where: { employeeID },
+      //       });
+
+      //       // Если расписание уже существует, вернуть ошибку
+      //       if (existingSchedule.length > 0) {
+      //         console.log("Расписание уже существует");
+      //         return res.status(409).json({ message: "Расписание уже существует" });
+      //       }
+
+      //       schedules.forEach(async (schedule) => {
+      //         const { date, startTime, endTime } = schedule;
+
+      //         if (new Date(date) < new Date()) {
+      //           console.log("Недопустимая дата");
+      //           return res.status(409).json({ message: "Недействительная дата" });
+      //         }
+
+      //         if (new Date(startTime) > new Date(endTime)) {
+      //           console.log("Недопустимое время начала и окончания ");
+      //           return res
+      //             .status(409)
+      //             .json({ message: "Недопустимое время начала и окончания" });
+      //         }
+
+      //         // Добавление расписания для нового сотрудника
+      //         const timeSlots = [];
+
+      //         const startTimeUTC = new Date(startTime);
+      //         const endTimeUTC = new Date(endTime);
+
+      //         const dateLocal = new Date(
+      //           dateUTC.setHours(
+      //             dateUTC.getHours() - dateUTC.getTimezoneOffset() / 60
+      //           )
+      //         );
+
+      //         const startLocal = new Date(
+      //           new Date(
+      //             startTimeUTC.setHours(
+      //               startTimeUTC.getHours() - startTimeUTC.getTimezoneOffset() / 60
+      //             )
+      //           ).setDate(dateLocal.getDate())
+      //         );
+
+      //         const endLocal = new Date(
+      //           endTimeUTC.setHours(
+      //             endTimeUTC.getHours() - endTimeUTC.getTimezoneOffset() / 60
+      //           )
+      //         );
+
+      //         console.log("------------------------------");
+
+      //         console.log("Date: ", dateLocal);
+      //         console.log("Start time: ", startLocal);
+      //         console.log("End time: ", endLocal);
+      //         console.log("------------------------------");
+
+      //         while (startLocal.getHours() < endLocal.getHours()) {
+      //           timeSlots.push({
+      //             employeeID: newEmployee.employeeID,
+      //             date: dateLocal,
+      //             startTime: new Date(startLocal),
+      //             endTime: new Date(startLocal.setHours(startLocal.getHours() + 1)),
+      //           });
+      //         }
+
+      //         new Date(startLocal.setDate(dateLocal.getDate()));
+      //         console.log(timeSlots);
+      //         // Добавление расписания в базу данных
+      //         if (timeSlots.length > 0) {
+      //           await clientPr.schedule.createMany({
+      //             data: timeSlots,
+      //           });
+
+      //           //clientPr.schedule.upsert()
+      //         }
+      //       });
+
+      //       // Возврат данных об успешно обновленном сотруднике
+      //       res.status(200).json({
+      //         message: "Сотрудник обновлен успешно",
+      //         employee: updatedEmployee,
+      //       });
+      //     }
+      //   } catch (error) {
+      //     console.error("Ошибка обновления сотрудника:", error);
+      //     res.status(500).json({ message: "Ошибка обмновления сотрудника" });
+      //   }
+      // }
       if (schedules) {
-        // Удаление существующего расписания
-        await clientPr.schedule.deleteMany({
-          where: { employeeID },
-        });
+        schedules.forEach(async (schedule) => {
+          const { date } = schedule;
 
-        // Добавление расписания для нового сотрудника
-        const timeSlots = [];
-
-        for (const schedule of schedules) {
-          const { date, startTime, endTime } = schedule;
-
-          // Преобразование `date`, `startTime`, и `endTime` в формат ISO-8601
-          const dateISO = convertToISO(date, "00:00");
-          const startTimeISO = convertToISO(date, startTime);
-          const endTimeISO = convertToISO(date, endTime);
-
-          // Разделение времени на часовые интервалы
-          let currentTime = dayjs(startTimeISO);
-          const endTimeDate = dayjs(endTimeISO);
-          console.log(currentTime);
-          while (currentTime.isBefore(endTimeDate)) {
-            // Добавление интервала времени в список
-            timeSlots.push({
+          // Проверка существующего расписания
+          const existingSchedule = await clientPr.schedule.findMany({
+            where: {
               employeeID,
-              date: dateISO,
-              startTime: currentTime.toISOString(),
-              endTime: currentTime.add(1, "hour").toISOString(),
-            });
-
-            // Переход к следующему часовому интервалу
-            currentTime = currentTime.add(1, "hour");
-          }
-          console.log(currentTime);
-
-          // Проверка оставшегося времени и добавление последнего интервала, если необходимо
-          const remainingTime = endTimeDate.diff(currentTime, "minute");
-          if (remainingTime >= 60) {
-            timeSlots.push({
-              employeeID,
-              date: dateISO,
-              startTime: currentTime.toISOString(),
-              endTime: endTimeDate.toISOString(),
-            });
-          }
-        }
-
-        // Добавление расписания в базу данных
-        if (timeSlots.length > 0) {
-          await clientPr.schedule.createMany({
-            data: timeSlots,
+              date: new Date(date),
+            },
           });
-        }
+
+          if (existingSchedule.length > 0) {
+            console.log("Расписание уже существует");
+            return res
+              .status(409)
+              .json({ message: "Расписание уже существует" });
+          }
+
+          // Проверка допустимости даты и времени
+          const { startTime, endTime } = schedule;
+          if (new Date(date) < new Date()) {
+            console.log("Недопустимая дата");
+            return res.status(409).json({ message: "Недействительная дата" });
+          }
+
+          if (new Date(startTime) > new Date(endTime)) {
+            console.log("Недопустимое время начала и окончания ");
+            return res
+              .status(409)
+              .json({ message: "Недопустимое время начала и окончания" });
+          }
+
+          // Добавление расписания для нового сотрудника
+          const timeSlots = [];
+          const startTimeUTC = new Date(startTime);
+          const endTimeUTC = new Date(endTime);
+
+          const dateLocal = new Date(
+            dateUTC.setHours(
+              dateUTC.getHours() - dateUTC.getTimezoneOffset() / 60
+            )
+          );
+
+          const startLocal = new Date(
+            new Date(
+              startTimeUTC.setHours(
+                startTimeUTC.getHours() - startTimeUTC.getTimezoneOffset() / 60
+              )
+            ).setDate(dateLocal.getDate())
+          );
+
+          const endLocal = new Date(
+            endTimeUTC.setHours(
+              endTimeUTC.getHours() - endTimeUTC.getTimezoneOffset() / 60
+            )
+          );
+
+          console.log("------------------------------");
+
+          console.log("Date: ", dateLocal);
+          console.log("Start time: ", startLocal);
+          console.log("End time: ", endLocal);
+          console.log("------------------------------");
+
+          while (startLocal.getHours() < endLocal.getHours()) {
+            timeSlots.push({
+              employeeID: newEmployee.employeeID,
+              date: dateLocal,
+              startTime: new Date(startLocal),
+              endTime: new Date(startLocal.setHours(startLocal.getHours() + 1)),
+            });
+          }
+
+          new Date(startLocal.setDate(dateLocal.getDate()));
+          console.log(timeSlots);
+          // Добавление расписания в базу данных
+          if (timeSlots.length > 0) {
+            await clientPr.schedule.createMany({
+              data: timeSlots,
+            });
+
+            //clientPr.schedule.upsert()
+          }
+        });
       }
 
       // Возврат данных об успешно обновленном сотруднике
       res.status(200).json({
-        message: "Employee updated successfully",
+        message: "Сотрудник обновлен успешно",
         employee: updatedEmployee,
       });
     } catch (error) {
-      console.error("Error updating employee:", error);
-      res.status(500).json({ message: "Error updating employee" });
+      console.error("Ошибка обновления сотрудника:", error);
+      res.status(500).json({ message: "Ошибка обновления сотрудника" });
     }
   }
 
@@ -402,13 +571,13 @@ class employeeController {
 
       res
         .status(200)
-        .json({ message: "Review deleted successfully", deletedEmployee });
+        .json({ message: "Сотрудник удален успешно", deletedEmployee });
     } catch (error) {
       if (error.code === "P2025") {
-        res.status(404).json({ error: "Review not found" });
+        res.status(404).json({ error: "Сотрудник не найден" });
       } else {
-        console.error("Ошибка при удалении отзыва:", error);
-        res.status(500).json({ error: "Ошибка при удалении отзыва" });
+        console.error("Ошибка при удалении сотрудника:", error);
+        res.status(500).json({ error: "Ошибка при удалении сотрудника" });
       }
     }
   }
@@ -449,14 +618,14 @@ class employeeController {
 
       // Если сотрудник не найден, возвращается сообщение об ошибке
       if (!employee) {
-        return res.status(404).json({ message: "Employee not found" });
+        return res.status(404).json({ message: "Сотрудник не найден" });
       }
 
       // Возврат данных о сотруднике, его услугах и расписании
       res.status(200).json(employee);
     } catch (error) {
-      console.error("Error getting employee by ID:", error);
-      res.status(500).json({ message: "Error getting employee by ID" });
+      console.error("Ошибка получения сотрудника по ID:", error);
+      res.status(500).json({ message: "Ошибка получения сотрудника по ID" });
     }
   }
 

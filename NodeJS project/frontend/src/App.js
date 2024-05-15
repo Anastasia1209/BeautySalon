@@ -16,6 +16,7 @@ import BookingForm from "./pages/BookForm";
 import AddEmployee from "./pages/AddEmployee";
 import AddService from "./pages/AddService";
 import NotFoundPage from "./pages/404";
+import TipsPage from "./pages/TipsPage";
 import { jwtDecode } from "jwt-decode";
 
 function App() {
@@ -58,6 +59,7 @@ function App() {
           <Route path="/empl/updempl/:id" element={<EditEmployee />} />
           <Route path="/empl/addempl" element={<AddEmployee />} />
           <Route path="/rev/getrewempl/:id" element={<ReviewPage />} />
+          <Route path="/addtips" element={<TipsPage />} />
           <Route
             path="/bookingform"
             element={isAuthenticated ? <BookingForm /> : <LoginForm />}

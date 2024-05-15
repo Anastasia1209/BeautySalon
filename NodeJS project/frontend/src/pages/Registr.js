@@ -54,7 +54,10 @@ function SignUp() {
     };
 
     try {
-      const response = await axios.post("/auth/registration", userData);
+      const response = await axios.post(
+        "https://localhost:5000/auth/registration",
+        userData
+      );
       console.log("User registered successfully:", response.data);
       navigate("/login");
     } catch (error) {

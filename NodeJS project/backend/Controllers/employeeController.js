@@ -153,15 +153,19 @@ class employeeController {
         },
       });
 
+      let error = false;
+
       schedules.forEach(async (schedule) => {
         const { date, startTime, endTime } = schedule;
 
         if (new Date(date) < new Date()) {
+          error = true;
           console.log("Недопустимая дата");
           return res.status(409).json({ message: "Недействительная дата" });
         }
 
         if (new Date(startTime) > new Date(endTime)) {
+          error = true;
           console.log("Недопустимое время начала и окончания ");
           return res
             .status(409)
@@ -226,10 +230,12 @@ class employeeController {
       });
 
       // Возврат данных о созданном сотруднике
-      res.status(201).json({
-        message: "Сотрудник успешно добавлен",
-        employee: newEmployee,
-      });
+      if (!error) {
+        res.status(201).json({
+          message: "Сотрудник успешно добавлен",
+          employee: newEmployee,
+        });
+      }
     } catch (error) {
       console.error("Ошибка добавления сотрудника: ", error);
       res.status(500).json({ message: "Ошибка добавления сотрудника" });
@@ -274,278 +280,144 @@ class employeeController {
 
       if (services) {
         // Удаление существующих связей с услугами сотрудника
-        // await clientPr.employeesServices.deleteMany({
-        //   where: { employeeID },
-        // });
+        await clientPr.employeesServices.deleteMany({
+          where: { employeeID },
+        });
 
         // Добавление новых связей с услугами
-        const servicesToAdd = services.map((serviceID) => ({
-          employeeID,
-          serviceID: parseInt(serviceID, 10),
-        }));
+        const servicesToAdd = services
+          .filter((serviceID) => !isNaN(parseInt(serviceID, 10)))
+          .map((serviceID) => ({
+            employeeID,
+            serviceID: parseInt(serviceID, 10),
+          }));
         console.log(servicesToAdd);
 
-        const existingServices = await clientPr.employeesServices.findMany({
-          where: {
-            employeeID,
-            serviceID: {
-              in: servicesToAdd.map((service) => service.serviceID),
-            },
-          },
-        });
-
-        const existingServiceIDs = new Set(
-          existingServices.map((service) => service.serviceID)
-        );
-
-        const uniqueServicesToAdd = servicesToAdd.filter(
-          (service) => !existingServiceIDs.has(service.serviceID)
-        );
-
-        if (uniqueServicesToAdd.length > 0) {
-          try {
-            await clientPr.employeesServices.createMany({
-              data: uniqueServicesToAdd,
-            });
-          } catch (error) {
-            console.error("Ошибка при добавлении новых услуг:", error);
-            return res
-              .status(500)
-              .json({ message: "Ошибка при добавлении новых услуг" });
-          }
+        if (servicesToAdd.length > 0) {
+          await clientPr.employeesServices.createMany({
+            data: servicesToAdd,
+          });
         }
       }
-      // Обновление услуг сотрудника
-      // if (services) {
-      //   // Извлечение существующих связей с услугами сотрудника
-      //   const existingServices = await clientPr.employeesServices.findMany({
-      //     where: { employeeID },
-      //     select: {
-      //       serviceID: true,
-      //     },
-      //   });
 
-      //   // Создание множества существующих и переданных услуг
-      //   const existingServiceIDs = new Set(
-      //     existingServices.map((service) => service.serviceID)
-      //   );
-      //   const newServiceIDs = new Set(services);
-
-      //   // Удаление услуг, которых больше нет в переданных данных
-      //   const servicesToRemove = Array.from(existingServiceIDs).filter(
-      //     (serviceID) => !newServiceIDs.has(serviceID)
-      //   );
-      //   if (servicesToRemove.length > 0) {
-      //     await clientPr.employeesServices.deleteMany({
-      //       where: {
-      //         employeeID,
-      //         serviceID: { in: servicesToRemove },
-      //       },
-      //     });
-      //   }
-
-      //   // Добавление новых услуг, которых нет в существующих
-      //   const servicesToAdd = Array.from(newServiceIDs).filter(
-      //     (serviceID) => !existingServiceIDs.has(serviceID)
-      //   );
-      //   if (servicesToAdd.length > 0) {
-      //     await clientPr.employeesServices.createMany({
-      //       data: servicesToAdd.map((serviceID) => ({
-      //         employeeID,
-      //         serviceID,
-      //       })),
-      //     });
-      //   }
-      // }
-
-      // Обновление расписания сотрудника
-      //     if (schedules) {
-      //       // Проверка существующего расписания
-      //       const existingSchedule = await clientPr.schedule.findMany({
-      //         where: { employeeID },
-      //       });
-
-      //       // Если расписание уже существует, вернуть ошибку
-      //       if (existingSchedule.length > 0) {
-      //         console.log("Расписание уже существует");
-      //         return res.status(409).json({ message: "Расписание уже существует" });
-      //       }
-
-      //       schedules.forEach(async (schedule) => {
-      //         const { date, startTime, endTime } = schedule;
-
-      //         if (new Date(date) < new Date()) {
-      //           console.log("Недопустимая дата");
-      //           return res.status(409).json({ message: "Недействительная дата" });
-      //         }
-
-      //         if (new Date(startTime) > new Date(endTime)) {
-      //           console.log("Недопустимое время начала и окончания ");
-      //           return res
-      //             .status(409)
-      //             .json({ message: "Недопустимое время начала и окончания" });
-      //         }
-
-      //         // Добавление расписания для нового сотрудника
-      //         const timeSlots = [];
-
-      //         const startTimeUTC = new Date(startTime);
-      //         const endTimeUTC = new Date(endTime);
-
-      //         const dateLocal = new Date(
-      //           dateUTC.setHours(
-      //             dateUTC.getHours() - dateUTC.getTimezoneOffset() / 60
-      //           )
-      //         );
-
-      //         const startLocal = new Date(
-      //           new Date(
-      //             startTimeUTC.setHours(
-      //               startTimeUTC.getHours() - startTimeUTC.getTimezoneOffset() / 60
-      //             )
-      //           ).setDate(dateLocal.getDate())
-      //         );
-
-      //         const endLocal = new Date(
-      //           endTimeUTC.setHours(
-      //             endTimeUTC.getHours() - endTimeUTC.getTimezoneOffset() / 60
-      //           )
-      //         );
-
-      //         console.log("------------------------------");
-
-      //         console.log("Date: ", dateLocal);
-      //         console.log("Start time: ", startLocal);
-      //         console.log("End time: ", endLocal);
-      //         console.log("------------------------------");
-
-      //         while (startLocal.getHours() < endLocal.getHours()) {
-      //           timeSlots.push({
-      //             employeeID: newEmployee.employeeID,
-      //             date: dateLocal,
-      //             startTime: new Date(startLocal),
-      //             endTime: new Date(startLocal.setHours(startLocal.getHours() + 1)),
-      //           });
-      //         }
-
-      //         new Date(startLocal.setDate(dateLocal.getDate()));
-      //         console.log(timeSlots);
-      //         // Добавление расписания в базу данных
-      //         if (timeSlots.length > 0) {
-      //           await clientPr.schedule.createMany({
-      //             data: timeSlots,
-      //           });
-
-      //           //clientPr.schedule.upsert()
-      //         }
-      //       });
-
-      //       // Возврат данных об успешно обновленном сотруднике
-      //       res.status(200).json({
-      //         message: "Сотрудник обновлен успешно",
-      //         employee: updatedEmployee,
-      //       });
-      //     }
-      //   } catch (error) {
-      //     console.error("Ошибка обновления сотрудника:", error);
-      //     res.status(500).json({ message: "Ошибка обмновления сотрудника" });
-      //   }
-      // }
+      let error = false;
       if (schedules) {
-        schedules.forEach(async (schedule) => {
-          const { date } = schedule;
+        // schedules.forEach(async (schedule) => {
+        for (const schedule of schedules) {
+          try {
+            const { date } = schedule;
 
-          // Проверка существующего расписания
-          const existingSchedule = await clientPr.schedule.findMany({
-            where: {
-              employeeID,
-              date: new Date(date),
-            },
-          });
+            // Проверка существующего расписания
+            const existingSchedule = await clientPr.schedule.findMany({
+              where: {
+                employeeID,
+                date: new Date(date),
+              },
+            });
 
-          if (existingSchedule.length > 0) {
-            console.log("Расписание уже существует");
-            return res
-              .status(409)
-              .json({ message: "Расписание уже существует" });
-          }
+            if (existingSchedule && !error) {
+              error = true;
+              console.log("Расписание уже существует");
+              throw new Error("Расписание уже существует");
+              return res
+                .status(409)
+                .json({ message: "Расписание уже существует" });
+            }
 
-          // Проверка допустимости даты и времени
-          const { startTime, endTime } = schedule;
-          if (new Date(date) < new Date()) {
-            console.log("Недопустимая дата");
-            return res.status(409).json({ message: "Недействительная дата" });
-          }
+            // Проверка допустимости даты и времени
+            const { startTime, endTime } = schedule;
+            if (new Date(date) < new Date() && !error) {
+              error = true;
+              console.log("Недопустимая дата");
+              throw new Error("Недействительная дата");
 
-          if (new Date(startTime) > new Date(endTime)) {
-            console.log("Недопустимое время начала и окончания ");
-            return res
-              .status(409)
-              .json({ message: "Недопустимое время начала и окончания" });
-          }
+              return res.status(409).json({ message: "Недействительная дата" });
+            }
 
-          // Добавление расписания для нового сотрудника
-          const timeSlots = [];
-          const startTimeUTC = new Date(startTime);
-          const endTimeUTC = new Date(endTime);
+            if (new Date(startTime) > new Date(endTime) && !error) {
+              error = true;
+              console.log("Недопустимое время начала и окончания ");
+              throw new Error("Недопустимое время начала и окончания");
+              return res
+                .status(409)
+                .json({ message: "Недопустимое время начала и окончания" });
+            }
 
-          const dateLocal = new Date(
-            dateUTC.setHours(
-              dateUTC.getHours() - dateUTC.getTimezoneOffset() / 60
-            )
-          );
+            // Добавление расписания для нового сотрудника
+            const timeSlots = [];
 
-          const startLocal = new Date(
-            new Date(
-              startTimeUTC.setHours(
-                startTimeUTC.getHours() - startTimeUTC.getTimezoneOffset() / 60
+            const dateUTC = new Date(date);
+            const startTimeUTC = new Date(startTime);
+            const endTimeUTC = new Date(endTime);
+
+            const dateLocal = new Date(
+              dateUTC.setHours(
+                dateUTC.getHours() - dateUTC.getTimezoneOffset() / 60
               )
-            ).setDate(dateLocal.getDate())
-          );
+            );
 
-          const endLocal = new Date(
-            endTimeUTC.setHours(
-              endTimeUTC.getHours() - endTimeUTC.getTimezoneOffset() / 60
-            )
-          );
+            const startLocal = new Date(
+              new Date(
+                startTimeUTC.setHours(
+                  startTimeUTC.getHours() -
+                    startTimeUTC.getTimezoneOffset() / 60
+                )
+              ).setDate(dateLocal.getDate())
+            );
 
-          console.log("------------------------------");
+            const endLocal = new Date(
+              endTimeUTC.setHours(
+                endTimeUTC.getHours() - endTimeUTC.getTimezoneOffset() / 60
+              )
+            );
 
-          console.log("Date: ", dateLocal);
-          console.log("Start time: ", startLocal);
-          console.log("End time: ", endLocal);
-          console.log("------------------------------");
+            console.log("------------------------------");
 
-          while (startLocal.getHours() < endLocal.getHours()) {
-            timeSlots.push({
-              employeeID: newEmployee.employeeID,
-              date: dateLocal,
-              startTime: new Date(startLocal),
-              endTime: new Date(startLocal.setHours(startLocal.getHours() + 1)),
-            });
+            console.log("Date: ", dateLocal);
+            console.log("Start time: ", startLocal);
+            console.log("End time: ", endLocal);
+            console.log("------------------------------");
+
+            while (startLocal.getHours() < endLocal.getHours()) {
+              timeSlots.push({
+                employeeID: updatedEmployee.employeeID,
+                date: dateLocal,
+                startTime: new Date(startLocal),
+                endTime: new Date(
+                  startLocal.setHours(startLocal.getHours() + 1)
+                ),
+              });
+            }
+
+            new Date(startLocal.setDate(dateLocal.getDate()));
+            console.log(timeSlots);
+            // Добавление расписания в базу данных
+            if (timeSlots.length > 0) {
+              await clientPr.schedule.createMany({
+                data: timeSlots,
+              });
+            }
+          } catch (error) {
+            console.error("Ошибка обработки расписания:", error);
+            return res.status(409).json({ message: error.message });
           }
+          //clientPr.schedule.upsert()
+          //  }
+          //  });
+        }
 
-          new Date(startLocal.setDate(dateLocal.getDate()));
-          console.log(timeSlots);
-          // Добавление расписания в базу данных
-          if (timeSlots.length > 0) {
-            await clientPr.schedule.createMany({
-              data: timeSlots,
-            });
-
-            //clientPr.schedule.upsert()
-          }
-        });
+        console.log(error);
+        if (!error) {
+          // Возврат данных об успешно обновленном сотруднике
+          res.status(200).json({
+            message: "Сотрудник обновлен успешно",
+            employee: updatedEmployee,
+          });
+        }
       }
-
-      // Возврат данных об успешно обновленном сотруднике
-      res.status(200).json({
-        message: "Сотрудник обновлен успешно",
-        employee: updatedEmployee,
-      });
     } catch (error) {
       console.error("Ошибка обновления сотрудника:", error);
-      res.status(500).json({ message: "Ошибка обновления сотрудника" });
+      res.status(500).json({ message: error.message });
     }
   }
 

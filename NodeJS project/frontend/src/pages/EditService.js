@@ -26,7 +26,9 @@ function EditService() {
   useEffect(() => {
     const fetchService = async () => {
       try {
-        const response = await axios.get(`/serv/getservbyid/${id}`);
+        const response = await axios.get(
+          `https://localhost:5000/serv/getservbyid/${id}`
+        );
         setService(response.data);
         setLoading(false);
       } catch (error) {
@@ -43,11 +45,15 @@ function EditService() {
   //изменение услуги
   const handleSubmit = async (serviceData, mode) => {
     try {
-      const response = await axios.put(`/serv/updserv/${id}`, serviceData, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
+      const response = await axios.put(
+        `https://localhost:5000/serv/updserv/${id}`,
+        serviceData,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
 
       console.log("Услуга успешно изменена:", response.data);
       navigate("/services");
@@ -62,7 +68,7 @@ function EditService() {
   //удаление услуги
   const handleDelete = async () => {
     try {
-      await axios.delete(`/serv/delserv/${id}`, {
+      await axios.delete(`https://localhost:5000/serv/delserv/${id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },

@@ -15,6 +15,11 @@ const tipsRoute = require("./Routes/tipsRoute");
 const app = express();
 const cron = require("node-cron");
 const handleMail = require("./ws");
+const WebSocket = require("ws");
+const https = require("https");
+const socketIo = require("socket.io");
+const getRandomTip = require("./ws");
+const fs = require("fs");
 
 app.use(cors());
 app.use(cookieParser());
@@ -25,6 +30,12 @@ app.use("/rev", revRoute);
 app.use("/empl", emplRoute);
 app.use("/book", bookingRoute);
 app.use("/tips", tipsRoute);
+
+app.use(
+  cors({
+    origin: "https://localhost:3000",
+  })
+);
 
 app.use(
   session({
@@ -96,7 +107,33 @@ cron.schedule("0 1 * * * ", async () => {
     console.log(new Date(data.date).getDate() - new Date().getDate());
   });
 });
+const options = {
+  key: fs.readFileSync("localhost-key.pem"),
+  cert: fs.readFileSync("localhost.pem"),
+};
+const server = https.createServer(options, app);
+const io = socketIo(server, {
+  cors: { origin: "*", methods: ["GET", "POST"] },
+});
+// Обработчик соединения WebSocket
+io.on("connection", (socket) => {
+  console.log("Новое соединение установлено");
 
-app.listen(5000, () =>
-  console.log(`Server running at http://localhost:${5000}\n`)
+  // Обработка события отправки сообщения от клиента
+  socket.on("message", async (message) => {
+    console.log("Получено сообщение от клиента:", message);
+    const tip = await getRandomTip.getRandomTip();
+
+    // Отправка обратно клиенту
+    io.emit("message", tip);
+  });
+
+  // Обработка отключения клиента
+  socket.on("disconnect", () => {
+    console.log("Соединение с клиентом разорвано");
+  });
+});
+
+server.listen(5000, () =>
+  console.log(`Server running at https://localhost:${5000}\n`)
 );

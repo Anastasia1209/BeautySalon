@@ -21,11 +21,14 @@
     "express-fingerprint": "^1.2.2",
     "express-session": "^1.18.0",
     "express-validator": "^7.0.1",
+    "http": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.13",
     "passport": "^0.7.0",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "socket.io": "^4.7.5",
+    "ws": "^8.17.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.0",

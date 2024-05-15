@@ -23,11 +23,15 @@ function AddEmployee() {
   // Функция для обработки отправки формы
   const handleAddEmployee = async (employeeData) => {
     try {
-      const response = await axios.post("/empl/addempl", employeeData, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
+      const response = await axios.post(
+        "https://localhost:5000/empl/addempl",
+        employeeData,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
 
       console.log("Сотрудник успешно добавлен:", response.data);
       navigate("/employees");

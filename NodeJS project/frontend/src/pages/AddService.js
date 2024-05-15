@@ -22,11 +22,15 @@ function AddServiceForm() {
 
   const handleSubmit = async (serviceData, mode) => {
     try {
-      const response = await axios.post("/serv/addservice", serviceData, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
+      const response = await axios.post(
+        "https://localhost:5000/serv/addservice",
+        serviceData,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
 
       console.log("Услуга успешно добавлена:", response.data.newService);
       navigate("/services");

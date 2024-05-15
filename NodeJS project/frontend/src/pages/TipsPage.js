@@ -23,7 +23,7 @@ const AddTipPage = () => {
   const handleAddTip = async () => {
     try {
       const response = await axios.post(
-        "/tips/addtips",
+        "https://localhost:5000/tips/addtips",
         { tip },
         {
           headers: {

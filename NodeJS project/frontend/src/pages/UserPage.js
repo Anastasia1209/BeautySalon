@@ -23,7 +23,7 @@ function UserPage() {
   // Функция для загрузки текущего пользователя
   const fetchCurrentUser = async () => {
     try {
-      const response = await axios.get("/auth/getuser", {
+      const response = await axios.get("https://localhost:5000/auth/getuser", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
@@ -51,7 +51,7 @@ function UserPage() {
 
   const fetchUserRegistrations = async () => {
     try {
-      const response = await axios.get("/book/getbook", {
+      const response = await axios.get("https://localhost:5000/book/getbook", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
@@ -93,7 +93,7 @@ function UserPage() {
       //  const token = localStorage.getItem("authToken");
 
       const response = await axios.put(
-        `/auth/upduser/${user.userID}`,
+        `https://localhost:5000/auth/upduser/${user.userID}`,
         formData,
         {
           headers: {
@@ -115,11 +115,14 @@ function UserPage() {
   const onCancel = async (registrationID) => {
     try {
       console.log(registrationID);
-      await axios.delete(`/book/delbook/${registrationID}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
+      await axios.delete(
+        `https://localhost:5000/book/delbook/${registrationID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
       console.log("Запись успешно отменена");
       window.location.reload();
 

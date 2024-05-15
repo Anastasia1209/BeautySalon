@@ -64,11 +64,14 @@ function BookingForm() {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await axios.get("/serv/getservices", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-        });
+        const response = await axios.get(
+          "https://localhost:5000/serv/getservices",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          }
+        );
         setAvailableServices(response.data || []);
       } catch (error) {
         console.error("Ошибка при загрузке списка услуг:", error);
@@ -100,11 +103,14 @@ function BookingForm() {
     const fetchAvailableDates = async () => {
       try {
         if (selectedService) {
-          const response = await axios.get(`/book/getdate/${selectedService}`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-            },
-          });
+          const response = await axios.get(
+            `https://localhost:5000/book/getdate/${selectedService}`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              },
+            }
+          );
           setAvailableDates(response.data.dates || []);
           console.log(response.data.dates);
         }
@@ -149,11 +155,14 @@ function BookingForm() {
           console.log("qqqqqqqqqqqqqqq " + formattedDate);
 
           const timeDate = new Date(selectedDate).getTime();
-          const response = await axios.get(`/book/getslots/${timeDate}`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-            },
-          });
+          const response = await axios.get(
+            `https://localhost:5000/book/getslots/${timeDate}`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              },
+            }
+          );
           const timeSlots = response.data.timeSlots || [];
 
           console.log(response.data);
@@ -187,7 +196,7 @@ function BookingForm() {
 
           // Запрос к новому маршруту API для загрузки мастеров
           const response = await axios.get(
-            `/book/getemployees/${selectedService}/${formattedDate}`,
+            `https://localhost:5000/book/getemployees/${selectedService}/${formattedDate}`,
             {
               headers: {
                 Authorization: `Bearer ${localStorage.getItem("authToken")}`,
@@ -234,11 +243,15 @@ function BookingForm() {
     };
 
     try {
-      const response = await axios.post("/book/booking", data, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
+      const response = await axios.post(
+        "https://localhost:5000/book/booking",
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
       console.log("Регистрация успешно добавлена:", response.data);
       navigate("/user");
       // Выполните действия после успешного добавления регистрации

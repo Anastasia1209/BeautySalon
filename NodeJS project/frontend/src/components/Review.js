@@ -76,11 +76,15 @@ const AddReview = ({ employeeID, onReviewAdded }) => {
     console.log("reviewData:", reviewData);
 
     try {
-      const response = await axios.post("/rev/addreview", reviewData, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
+      const response = await axios.post(
+        "https://localhost:5000/rev/addreview",
+        reviewData,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
 
       if (response.status === 201) {
         onReviewAdded && onReviewAdded(response.data);

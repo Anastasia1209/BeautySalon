@@ -24,7 +24,9 @@ function ReviewPage() {
 
   const loadReviews = async () => {
     try {
-      const response = await axios.get(`/rev/getrewempl/${employeeID}`);
+      const response = await axios.get(
+        `https://localhost:5000/rev/getrewempl/${employeeID}`
+      );
 
       setReviews(response.data);
     } catch (error) {

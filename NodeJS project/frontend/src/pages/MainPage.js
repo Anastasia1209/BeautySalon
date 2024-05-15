@@ -38,7 +38,7 @@ function MainPage() {
 
   const sections = [
     { title: "Услуги", url: "/services" },
-    //   { title: "Отзывы", url: "/review" },
+    //{ title: "Советы", url: "/review" },
     { title: "Сотрудники", url: "/employees" },
   ];
 

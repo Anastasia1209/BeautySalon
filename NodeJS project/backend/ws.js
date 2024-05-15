@@ -93,6 +93,22 @@ const getAllRegistrations = async (req, res) => {
     );
   }
 };
+const getRandomTip = async (req, res) => {
+  try {
+    const allTips = await clientPr.tips.findMany();
+
+    const randomIndex = Math.floor(Math.random() * allTips.length);
+    const randomTip = allTips[randomIndex];
+
+    if (randomTip) {
+      console.log(randomTip);
+      return randomTip.tip;
+    }
+  } catch (error) {
+    console.error("Ошибка при получении случайной записи:", error);
+  }
+};
+module.exports.getRandomTip = getRandomTip;
 
 module.exports.sendMail = sendMail;
 module.exports.getAllRegistrations = getAllRegistrations;

@@ -45,7 +45,10 @@ function SignIn() {
     };
 
     try {
-      const response = await axios.post("/auth/login", userData);
+      const response = await axios.post(
+        "https://localhost:5000/auth/login",
+        userData
+      );
       const token = response.data.token;
 
       console.log("User logged in successfully:", token);

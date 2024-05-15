@@ -10,6 +10,7 @@ import {
   Typography,
   Grid,
 } from "@material-ui/core";
+import io from "socket.io-client";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -39,6 +40,18 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const socket = io.connect("https://localhost:5000");
+
+socket.on("message", (data) => {
+  console.log("Получено сообщение от сервера:", data);
+  alert(data);
+});
+
+const sendMessage = () => {
+  console.log("Отправлено сообщение на сервер:", "message");
+  socket.emit("message", "message");
+};
+
 export default function NavMenu({ sections = [], buttonPath, buttonText }) {
   const classes = useStyles();
   // const { nav } = props;
@@ -54,6 +67,13 @@ export default function NavMenu({ sections = [], buttonPath, buttonText }) {
             </Typography>
 
             <Box>
+              <Button
+                onClick={sendMessage}
+                color="inherit"
+                className={classes.button}
+              >
+                Советы
+              </Button>
               <Link to={buttonPath}>
                 <Button color="inherit" className={classes.button}>
                   {buttonText}

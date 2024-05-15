@@ -35,7 +35,7 @@ function ServicesPage() {
 
   useEffect(() => {
     axios
-      .get("/serv/getservices")
+      .get("https://localhost:5000/serv/getservices")
       .then((response) => {
         setServices(response.data);
       })

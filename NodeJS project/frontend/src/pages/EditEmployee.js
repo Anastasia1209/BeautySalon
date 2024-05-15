@@ -27,11 +27,14 @@ function EditEmployeePage() {
     // Загрузка данных о сотруднике для редактирования
     const fetchEmployeeData = async () => {
       try {
-        const response = await axios.get(`/empl/getemplbyid/${id}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-        });
+        const response = await axios.get(
+          `https://localhost:5000/empl/getemplbyid/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          }
+        );
         console.log(response.data);
         setInitialData(response.data);
         setLoading(false);
@@ -49,11 +52,17 @@ function EditEmployeePage() {
   // Обработка отправки формы
   const handleUpdateEmployee = async (employeeData) => {
     try {
-      const response = await axios.put(`/empl/updempl/${id}`, employeeData, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
+      console.log("qqqqqq " + id);
+      console.log(employeeData);
+      const response = await axios.put(
+        `https://localhost:5000/empl/updempl/${id}`,
+        employeeData,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
 
       console.log("Сотрудник успешно обновлен:", response.data);
       navigate("/employees"); // Укажите нужный маршрут после успешного обновления
@@ -69,7 +78,7 @@ function EditEmployeePage() {
   const handleDeleteEmployee = async () => {
     try {
       // Отправка запроса на удаление сотрудника
-      await axios.delete(`/empl/delempl/${id}`, {
+      await axios.delete(`https://localhost:5000/empl/delempl/${id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },

@@ -13,6 +13,6 @@ router.post(
   checkRole("ADMIN"),
   tipsController.addTip
 );
-router.get("/gettips", authMiddleware, tipsController.getRandomTip);
+//router.get("/gettips", authMiddleware, tipsController.getRandomTip);
 
 module.exports = router;

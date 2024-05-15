@@ -26,25 +26,23 @@ class tipsController {
     }
   }
 
-  async getRandomTip(req, res) {
-    try {
-      const allTips = await clientPr.tips.findMany();
+  // async getRandomTip(req, res) {
+  //   try {
+  //     const allTips = await clientPr.tips.findMany();
 
-      const randomIndex = Math.floor(Math.random() * allTips.length);
-      const randomTip = allTips[randomIndex];
+  //     const randomIndex = Math.floor(Math.random() * allTips.length);
+  //     const randomTip = allTips[randomIndex];
 
-      if (randomTip) {
-        res.status(200).json({ tip: randomTip });
-      } else {
-        res.status(404).json({ error: "Запись не найдена" });
-      }
-    } catch (error) {
-      console.error("Ошибка при получении случайной записи:", error);
-      res.status(500).json({ error: "Ошибка при получении случайной записи" });
-    }
-  }
-
-  async;
+  //     if (randomTip) {
+  //       res.status(200).json({ tip: randomTip });
+  //     } else {
+  //       res.status(404).json({ error: "Запись не найдена" });
+  //     }
+  //   } catch (error) {
+  //     console.error("Ошибка при получении случайной записи:", error);
+  //     res.status(500).json({ error: "Ошибка при получении случайной записи" });
+  //   }
+  // }
 }
-
+//module.exports.getTip = this.getRandomTip();
 module.exports = new tipsController();

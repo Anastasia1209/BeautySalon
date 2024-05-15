@@ -44,7 +44,7 @@ function EmployeesPage() {
 
   useEffect(() => {
     axios
-      .get("/empl/getempl")
+      .get("https://localhost:5000/empl/getempl")
       .then((response) => {
         setEmployees(response.data);
       })
@@ -58,7 +58,9 @@ function EmployeesPage() {
       try {
         const ratings = {};
         for (const employee of employees) {
-          const response = await axios.get(`/rev/getrating/${employee.id}`);
+          const response = await axios.get(
+            `https://localhost:5000/rev/getrating/${employee.id}`
+          );
           ratings[employee.id] = response.data.averageRating;
         }
         setAverageRatings(ratings);

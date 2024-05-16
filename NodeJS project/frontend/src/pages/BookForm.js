@@ -123,21 +123,9 @@ function BookingForm() {
 
   // Функция для определения, является ли дата недоступной
   const shouldDisableDate = (date) => {
-    // Преобразуем дату из DatePicker к ISO-формату (гггг-мм-дд)
-    //const formattedDate = date.toString().split("T")[0];
-
     const availDate = availableDates.map((d) => new Date(d).getDate());
 
-    //console.log("formatted date: " + formattedDate);
-    // Преобразуем даты из базы данных к ISO-формату (гггг-мм-дд)
-    // const availableISOdates = availableDates.map(
-    //   (d) => new Date(d).toString().split("T")[0]
-    // );
-    //console.log("available dates: " + availableISOdates);
-
     return !availDate.includes(new Date(date).getDate());
-    // Сравниваем даты
-    //return !availableISOdates.includes(formattedDate);
   };
   //////////////////////////////////////
 
@@ -152,7 +140,7 @@ function BookingForm() {
             .toISOString()
             .split("T")[0];
           // console.log("asdasfasfas   " + new Date(selectedDate));
-          console.log("qqqqqqqqqqqqqqq " + formattedDate);
+          // console.log("qqqqqqqqqqqqqqq " + formattedDate);
 
           const timeDate = new Date(selectedDate).getTime();
           const response = await axios.get(
@@ -210,9 +198,6 @@ function BookingForm() {
           );
 
           setAvailableEmployee(availableEmployeeForDate || []);
-
-          // Установка загруженных мастеров
-          // setAvailableEmployee(response.data.employees || []);
         }
       } catch (error) {
         console.error("Ошибка при загрузке мастеров для даты:", error);
@@ -237,7 +222,6 @@ function BookingForm() {
       userID,
       employeeID: selectedEmployee,
       date: new Date(selectedDate).getTime(),
-      //date: selectedDate.toISOString().split("T")[0],
       startTime: selectedTime,
       notes,
     };
@@ -305,8 +289,6 @@ function BookingForm() {
       <div>
         {/* Карточки мастеров */}
         {availableEmployee.map((employee) => {
-          //  const timeSlots = availableTimes[employee.employeeID];
-
           return (
             <EmployeeCard
               key={employee.employeeID}

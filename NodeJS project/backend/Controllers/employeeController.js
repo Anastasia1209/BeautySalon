@@ -7,7 +7,6 @@ require("dayjs/plugin/timezone");
 dayjs.extend(require("dayjs/plugin/utc"));
 dayjs.extend(require("dayjs/plugin/timezone"));
 
-// Функция для преобразования времени в формат ISO-8601
 function convertToISO(date, time) {
   const dateTimeString = `${date}T${time}:00Z`;
   const dateTime = dayjs(dateTimeString);
@@ -19,7 +18,6 @@ class employeeController {
   async getEmployees(req, res) {
     try {
       const employees = await clientPr.employees.findMany({
-        // Включаем связанные данные об услугах для каждого сотрудника
         include: {
           services: {
             include: {
@@ -48,9 +46,6 @@ class employeeController {
 
   async getEmployeesByService(req, res) {
     try {
-      // const serviceID = parseInt(req.params.id, 10);
-
-      // const { serviceID } = req.body;
       const { serviceID } = req.params;
       const parsedServiceID = parseInt(serviceID, 10);
 
@@ -62,7 +57,6 @@ class employeeController {
           .json({ message: "Требуется идентификатор услуги." });
       }
 
-      // Поиск сотрудников, предоставляющих данную услугу
       const employees = await clientPr.employees.findMany({
         where: {
           services: {
@@ -78,14 +72,12 @@ class employeeController {
         },
       });
 
-      // Проверка наличия сотрудников для данной услуги
       if (employees.length === 0) {
         return res
           .status(404)
           .json({ message: "Сотрудников для указанной услуги не найдено" });
       }
 
-      // Возвращаем список сотрудников (имя и фамилию) в ответ
       res.status(200).json({
         message: "Сотрудники получены успешно",
         employees: employees,
@@ -99,17 +91,9 @@ class employeeController {
   }
 
   //////////////////////////////////
-  //////////////////////////////////
-  // async addSchedule(newEmployee, schedules, clientPr) {
-  //   const timeSlots = [];
-
-  //   const { date, startTime, endTime } = schedules[0];
-
-  //////////////////////////////////
   //добавление сотрудника
   async addEmployee(req, res) {
     try {
-      // Извлечение данных из тела запроса
       const { name, surname, positions, email, services, schedules } = req.body;
 
       if (!name || !surname || !positions || !email) {
@@ -125,7 +109,6 @@ class employeeController {
         return res.status(400).json({ message: "Некорректный email" });
       }
 
-      // Проверка существования сотрудника с таким же email
       const existingEmployee = await clientPr.employees.findFirst({
         where: {
           email: email,
@@ -139,14 +122,12 @@ class employeeController {
           .json({ message: "Сотрудник с таким email уже существует" });
       }
 
-      // Создание нового сотрудника и добавление его услуг
       const newEmployee = await clientPr.employees.create({
         data: {
           name,
           surname,
           positions,
           email,
-          // Добавление связей с услугами
           services: {
             create: services.map((serviceID) => ({ serviceID })),
           },
@@ -219,17 +200,13 @@ class employeeController {
 
         new Date(startLocal.setDate(dateLocal.getDate()));
         console.log(timeSlots);
-        // Добавление расписания в базу данных
         if (timeSlots.length > 0) {
           await clientPr.schedule.createMany({
             data: timeSlots,
           });
-
-          //clientPr.schedule.upsert()
         }
       });
 
-      // Возврат данных о созданном сотруднике
       if (!error) {
         res.status(201).json({
           message: "Сотрудник успешно добавлен",
@@ -247,13 +224,10 @@ class employeeController {
   /////////////////////////////////////////
   async updateEmployee(req, res) {
     try {
-      // Извлечение идентификатора сотрудника из параметров запроса
       const employeeID = parseInt(req.params.id, 10);
 
-      // Извлечение данных из тела запроса
       const { name, surname, positions, email, services, schedules } = req.body;
 
-      // Проверка, указаны ли данные для обновления
       if (
         !name &&
         !surname &&
@@ -265,21 +239,18 @@ class employeeController {
         return res.status(400).json({ message: "НЕт данных для удаления" });
       }
 
-      // Обновление информации о сотруднике
       const updateData = {};
       if (name) updateData.name = name;
       if (surname) updateData.surname = surname;
       if (positions) updateData.positions = positions;
       if (email) updateData.email = email;
 
-      // Обновление сотрудника в базе данных
       const updatedEmployee = await clientPr.employees.update({
         where: { employeeID },
         data: updateData,
       });
 
       if (services) {
-        // Удаление существующих связей с услугами сотрудника
         await clientPr.employeesServices.deleteMany({
           where: { employeeID },
         });
@@ -302,7 +273,6 @@ class employeeController {
 
       let error = false;
       if (schedules) {
-        // schedules.forEach(async (schedule) => {
         for (const schedule of schedules) {
           try {
             const { date } = schedule;
@@ -401,14 +371,10 @@ class employeeController {
             console.error("Ошибка обработки расписания:", error);
             return res.status(409).json({ message: error.message });
           }
-          //clientPr.schedule.upsert()
-          //  }
-          //  });
         }
 
         console.log(error);
         if (!error) {
-          // Возврат данных об успешно обновленном сотруднике
           res.status(200).json({
             message: "Сотрудник обновлен успешно",
             employee: updatedEmployee,
@@ -456,14 +422,11 @@ class employeeController {
 
   async getEmployeeById(req, res) {
     try {
-      // Получение идентификатора сотрудника из параметров запроса
       const employeeID = parseInt(req.params.id, 10);
 
-      // Поиск сотрудника по идентификатору и включение его услуг и расписания
       const employee = await clientPr.employees.findFirst({
         where: { employeeID },
         include: {
-          // Включение данных о связанных услугах через модель `Servics`
           services: {
             include: {
               service: {
@@ -476,7 +439,6 @@ class employeeController {
               },
             },
           },
-          // Включение данных о связанном расписании
           schedules: {
             select: {
               scheduleID: true,
@@ -488,12 +450,10 @@ class employeeController {
         },
       });
 
-      // Если сотрудник не найден, возвращается сообщение об ошибке
       if (!employee) {
         return res.status(404).json({ message: "Сотрудник не найден" });
       }
 
-      // Возврат данных о сотруднике, его услугах и расписании
       res.status(200).json(employee);
     } catch (error) {
       console.error("Ошибка получения сотрудника по ID:", error);

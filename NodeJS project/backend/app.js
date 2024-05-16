@@ -128,7 +128,6 @@ io.on("connection", (socket) => {
     io.emit("message", tip);
   });
 
-  // Обработка отключения клиента
   socket.on("disconnect", () => {
     console.log("Соединение с клиентом разорвано");
   });

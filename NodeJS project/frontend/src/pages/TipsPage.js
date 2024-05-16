@@ -32,7 +32,6 @@ const AddTipPage = () => {
         }
       );
       console.log("Совет успешно добавлен");
-      // setMessage(response.data.message);
       setTip("");
       setError("");
     } catch (error) {

@@ -30,33 +30,6 @@ const AddReview = ({ employeeID, onReviewAdded }) => {
     setUserID(userID);
   }, []);
 
-  //то что было раньше
-  // Функция для получения userID из сервера
-  // const fetchUserID = async () => {
-  //   const token = localStorage.getItem("authToken"); // Извлекаем токен из localStorage
-  //   if (token) {
-  //     try {
-  //       const response = await axios.get("/auth/getuser", {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       });
-
-  //       // Если запрос успешный и получены данные пользователя, установим userID
-  //       if (response.status === 200 && response.data && response.data.userID) {
-  //         setUserID(response.data.userID);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching user ID:", error);
-  //     }
-  //   } else {
-  //     console.error("Auth token not found");
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   fetchUserID();
-  // }, []);
   ///////////////////////////////////////////
   const handleSubmit = async (e) => {
     e.preventDefault();

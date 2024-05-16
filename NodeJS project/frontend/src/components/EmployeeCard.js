@@ -59,16 +59,6 @@ const EmployeeCard = ({
               className={`${classes.timeButton} ${
                 slot.startTime === localSelectedTime ? "selected" : ""
               }`}
-              //  onClick={() => onTimeSlotClick(slot.startTime)}
-              // onClick={() => {
-              //   console.log(
-              //     "Нажатие на время:",
-              //     slot.startTime,
-              //     "для мастера:",
-              //     employeeID
-              //   );
-              //   onTimeSlotClick(slot.startTime, employeeID);
-              // }}
               onClick={() => {
                 console.log(
                   "Нажатие на время:",

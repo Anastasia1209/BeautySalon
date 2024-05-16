@@ -52,8 +52,8 @@ function EditEmployeePage() {
   // Обработка отправки формы
   const handleUpdateEmployee = async (employeeData) => {
     try {
-      console.log("qqqqqq " + id);
-      console.log(employeeData);
+      //console.log("qqqqqq " + id);
+      //console.log(employeeData);
       const response = await axios.put(
         `https://localhost:5000/empl/updempl/${id}`,
         employeeData,

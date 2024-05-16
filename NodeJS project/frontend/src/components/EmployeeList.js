@@ -1,10 +1,9 @@
 import React from "react";
 import { Container, Grid, Paper, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import { Link } from "react-router-dom"; // Импортируем Link для кликабельности
+import { Link } from "react-router-dom";
 import { Rating } from "@mui/material";
 
-// Определяем стили для компонента
 const useStyles = makeStyles((theme) => ({
   paper: {
     padding: theme.spacing(3),
@@ -14,8 +13,8 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: theme.spacing(4),
   },
   employeeName: {
-    textDecoration: "none", // Убираем подчеркивание для ссылок
-    color: "inherit", // Наследуем цвет от родителя
+    textDecoration: "none",
+    color: "inherit",
   },
 }));
 

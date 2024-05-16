@@ -23,7 +23,6 @@ const sendMail = async (email, data) => {
        Уважаемый ${data.name},
        ${data.day}, ${data.time}, ждём вас на процедуре ${data.service}. Ваш мастер ${data.employee}
     `;
-  console.log("aaaaaaaaaaaaaaaaaaaaaaaa");
   const message = {
     to: email,
     subject: process.env.EMAIL_SUBJECT,

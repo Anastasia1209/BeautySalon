@@ -6,32 +6,17 @@ const { validationResult } = require("express-validator");
 const secret = process.env.ACCESS_TOKEN_SECRET;
 const dayjs = require("dayjs");
 
-// function convertDateToISO(dateString) {
-//   // Создаем объект даты из строки в формате YYYY-MM-DD
-//   const date = new Date(dateString);
-
-//   // Устанавливаем время на начало дня (00:00:00.000 UTC)
-//   date.setUTCHours(0, 0, 0, 0);
-
-//   // Преобразуем дату в формат ISO 8601
-//   return date.toISOString();
-// }
-
 class bookingController {
   async getAvailableDatesForService(req, res) {
     try {
-      // Извлекаем идентификатор услуги из параметров или query
-      // const serviceID = req.query.serviceID;
       const { serviceID } = req.params;
 
-      // Проверяем, что `serviceID` определен
       if (!serviceID) {
         return res
           .status(400)
           .json({ message: "Требуется идентификатор услуги" });
       }
 
-      // Поиск мастеров, которые предоставляют данную услугу
       const employees = await clientPr.employees.findMany({
         where: {
           services: {
@@ -52,38 +37,32 @@ class bookingController {
         },
       });
 
-      // Извлекаем идентификаторы мастеров
       const employeeIDs = employees.map((employee) => employee.employeeID);
 
-      // Если нет мастеров, предоставляющих эту услугу
       if (employeeIDs.length === 0) {
         return res
           .status(404)
           .json({ message: "Сотрудников для указанной услуги не найдено" });
       }
 
-      //  const currentDate = new Date().toISOString().slice(0, 10);
-
-      // Поиск расписаний для мастеров, которые предоставляют данную услугу
       const schedules = await clientPr.schedule.findMany({
         where: {
           employeeID: {
-            in: employeeIDs, // Используем массив идентификаторов мастеров
+            in: employeeIDs,
           },
           // date: {
           //   gte: currentDate, // Дата не раньше текущей даты
           // },
         },
         select: {
-          date: true, // Выбираем только дату
+          date: true,
+          у,
         },
-        distinct: ["date"], // Используем distinct для уникальности дат
+        distinct: ["date"], //  distinct для уникальности дат
       });
 
-      // Извлекаем уникальные даты
       const uniqueDates = schedules.map((schedule) => schedule.date);
 
-      // Возвращаем список уникальных дат
       res.status(200).json({
         message: "Доступные даты успешно получены.",
         dates: uniqueDates,
@@ -96,11 +75,9 @@ class bookingController {
 
   async getTimeSlotsForDate(req, res) {
     try {
-      // Извлекаем дату из запроса
       const { date } = req.params;
       console.log("data");
       console.log(date);
-      // Если дата не указана, возвращаем ошибку
       if (!date) {
         return res.status(400).json({ message: "Требуется параметр даты" });
       }
@@ -111,12 +88,6 @@ class bookingController {
       console.log(new Date(parseInt(date)));
       const formatDate = new Date(parseInt(date));
       console.log("foramta: " + formatDate);
-      // Преобразуем дату в формат Date
-      // const test = new Date(
-      //   formatDate.setHours(
-      //     formatDate.getHours() - formatDate.getTimezoneOffset()
-      //   )
-      // );
 
       console.log(formatDate.getTimezoneOffset());
       console.log(formatDate.getHours());
@@ -135,7 +106,6 @@ class bookingController {
         },
       });
 
-      // Возвращаем найденные временные слоты в ответ
       res.status(200).json({
         message: "Time slots успешно получены",
         date: selectedDate.toISOString().split("T")[0],
@@ -149,17 +119,14 @@ class bookingController {
 
   async getEmployeesAndTimeForDate(req, res) {
     try {
-      // Получаем `serviceID` и `date` из запроса
       const { serviceID, date } = req.params;
 
-      // Проверка, что `serviceID` и `date` предоставлены
       if (!serviceID || !date) {
         return res
           .status(400)
           .json({ message: "Требуется идентификатор услуги и дата." });
       }
 
-      // Найти сотрудников, предоставляющих данную услугу
       const employees = await clientPr.employees.findMany({
         where: {
           services: {
@@ -175,15 +142,12 @@ class bookingController {
         },
       });
 
-      // Если нет сотрудников, возвращаем пустой список
       if (employees.length === 0) {
         return res.status(200).json({ employees: [] });
       }
 
-      // Получаем расписание для каждого сотрудника на выбранную дату
       const employeesWithTime = await Promise.all(
         employees.map(async (employee) => {
-          // Получаем расписание для текущего сотрудника
           const schedule = await clientPr.schedule.findMany({
             where: {
               employeeID: employee.employeeID,
@@ -193,12 +157,11 @@ class bookingController {
 
           return {
             ...employee,
-            schedule, // Добавляем расписание к сотруднику
+            schedule, // расписание к сотруднику
           };
         })
       );
 
-      // Возвращаем сотрудников и их расписание
       res.status(200).json({ employees: employeesWithTime });
     } catch (error) {
       console.error(
@@ -214,7 +177,6 @@ class bookingController {
   ///
   async addRegistration(req, res) {
     try {
-      // Проверка входных данных
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         console.log("Неверно введены данные");
@@ -240,7 +202,6 @@ class bookingController {
       );
 
       console.log(new Date(startTime));
-      // Проверка наличия времени в расписании мастера
       const availableSchedule = await clientPr.schedule.findFirst({
         where: {
           employeeID,
@@ -254,7 +215,6 @@ class bookingController {
         return res.status(400).json({ message: "Время недоступно" });
       }
 
-      // Создание новой записи в таблице Registration
       const newRegistration = await clientPr.registration.create({
         data: {
           userID,
@@ -264,7 +224,6 @@ class bookingController {
         },
       });
 
-      // Удаляем время из расписания мастера
       await clientPr.schedule.delete({
         where: {
           scheduleID: availableSchedule.scheduleID,
@@ -285,11 +244,9 @@ class bookingController {
   //получение инфы
   async getUserRegistrations(req, res) {
     try {
-      //   const userID = parseInt(req.params.userID, 10);
       const userID = req.user.userID;
 
       console.log(userID);
-      // Поиск записей о регистрации для конкретного пользователя (userID)
       const registrations = await clientPr.registration.findMany({
         where: {
           userID: userID,
@@ -300,7 +257,6 @@ class bookingController {
         include: {
           employee: {
             include: {
-              // Включаем информацию об услуге
               services: {
                 include: {
                   service: {
@@ -315,12 +271,10 @@ class bookingController {
         },
       });
 
-      // Если записей о регистрации не найдено, вернуть пустой массив
       if (!registrations || registrations.length === 0) {
         return res.status(404).json({ message: "Записи на услуги не найдены" });
       }
 
-      // Преобразование данных о регистрации в требуемый формат
       const formattedRegistrations = registrations.map((registration) => ({
         registrationID: registration.registrationID,
         date: registration.dateTime.toISOString().split("T")[0],
@@ -329,7 +283,6 @@ class bookingController {
         employee: `${registration.employee.name} ${registration.employee.surname}`,
       }));
 
-      // Возвращение информации о записях на услуги
       res.status(200).json({
         message: "Информация о записях на услуги получена успешно",
         registrations: formattedRegistrations,
@@ -347,10 +300,8 @@ class bookingController {
 
   async cancelRegistration(req, res) {
     try {
-      // Получаем ID регистрации из запроса
       const { registrationID } = req.params;
       console.log(registrationID);
-      // Поиск регистрации по ID
       const registration = await clientPr.registration.findUnique({
         where: {
           registrationID: parseInt(registrationID, 10),
@@ -363,13 +314,6 @@ class bookingController {
       }
       console.log("regStart: ");
       console.log(registration.dateTime);
-
-      // const selectedDate = new Date(
-      //   registration.dateTime.setHours(
-      //     registration.dateTime.getHours() -
-      //       registration.dateTime.getTimezoneOffset() / 60
-      //   )
-      // );
 
       console.log("regSec: ");
       console.log(registration.dateTime);
@@ -389,7 +333,6 @@ class bookingController {
       console.log(startTime);
 
       console.log();
-      // Восстанавливаем время в расписании мастера
       await clientPr.schedule.create({
         data: {
           employee: {
@@ -405,7 +348,6 @@ class bookingController {
         },
       });
 
-      // Удаляем регистрацию
       await clientPr.registration.delete({
         where: {
           registrationID: registration.registrationID,

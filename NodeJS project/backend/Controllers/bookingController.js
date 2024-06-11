@@ -56,7 +56,7 @@ class bookingController {
         },
         select: {
           date: true,
-          у,
+          //   у,
         },
         distinct: ["date"], //  distinct для уникальности дат
       });
